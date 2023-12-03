@@ -153,13 +153,13 @@ async def callback_nav(callback: CallbackQuery):
     while page >= 0:
         try:
             builder = await keyboard(page, callback.from_user.id)
-            await bot.send_message(data.user_id, text="Список подписок", reply_markup=builder)
+            await bot.send_message(callback.from_user.id, text="Список подписок", reply_markup=builder)
             break
         except IndexError:
             page -= 1
 
     await callback.answer(f"Тайтл успешно удалён!")
-    await bot.delete_message(callback.message.chat.id, callback.message.message_id)
+    await bot.delete_message(callback.from_user.id, callback.message.message_id)
 
 
 async def keyboard(page: int, user_id: int) -> InlineKeyboardMarkup:
