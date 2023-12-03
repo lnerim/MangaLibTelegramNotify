@@ -8,7 +8,11 @@ class TitleData(CallbackData, prefix="title"):
 
 class ItemData(CallbackData, prefix="item"):
     key: int | str
-    name_title: str | str
+    page: int
+
+
+class DeleteItem(CallbackData, prefix="del"):
+    key: int
 
 
 class NavigationData(CallbackData, prefix="nav"):
