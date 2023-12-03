@@ -132,10 +132,10 @@ async def callback_nav(callback: CallbackQuery):
     data: NavigationData = NavigationData.unpack(callback.data)
 
     try:
-        builder = await keyboard(data.page, data.user_id)
-        await bot.send_message(data.user_id, text="Список подписок", reply_markup=builder)
+        builder = await keyboard(data.page, callback.from_user.id)
+        await bot.send_message(callback.from_user.id, text="Список подписок", reply_markup=builder)
     except IndexError:
-        await bot.send_message(data.user_id,
+        await bot.send_message(callback.from_user.id,
                                text="Сейчас у Вас нет активных подписок, чтобы начать отслеживание, "
                                     "пожалуйста, ""ознакомьтесь с инструкцией /help")
     finally:
