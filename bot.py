@@ -1,4 +1,5 @@
 import asyncio
+import traceback
 from datetime import datetime, UTC
 from os import getenv
 
@@ -73,7 +74,7 @@ async def search_input(message: Message, state: FSMContext):
     except Exception as e:
         await search_msg.delete()
         await message.answer("Поиск не удался, попробуйте позже...")
-        print(e.__traceback__)
+        traceback.print_tb(e.__traceback__)
         return
 
     if not search_data:
@@ -214,7 +215,7 @@ async def check_update(site: Lib):
         try:
             titles = await get_latest_updates(site)
         except Exception as e:
-            print(e.__traceback__)
+            traceback.print_tb(e.__traceback__)
             await asyncio.sleep(30)
             continue
 
@@ -233,7 +234,7 @@ async def check_update(site: Lib):
                         parse_mode="HTML"
                     )
             except Exception as e:
-                print(e.__traceback__)
+                traceback.print_tb(e.__traceback__)
                 await asyncio.sleep(30)
                 continue
 
