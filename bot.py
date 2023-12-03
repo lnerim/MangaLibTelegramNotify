@@ -215,11 +215,12 @@ async def check_update(site: Lib):
             titles = await get_latest_updates(site)
         except Exception as e:
             print(e.__traceback__)
+            await asyncio.sleep(30)
             continue
 
         for title in titles:
-            if title.last_item_at < latest_updates[site.site_id]:
-                latest_updates[site.site_id] = title.last_item_at if not None else datetime.now()
+            if title.last_item_at <= latest_updates[site.site_id]:
+                latest_updates[site.site_id] = titles[0].last_item_at if not None else datetime.now()
                 break
             users = db.users_by_publication(title_id=title.title_id)
             try:
@@ -233,6 +234,7 @@ async def check_update(site: Lib):
                     )
             except Exception as e:
                 print(e.__traceback__)
+                await asyncio.sleep(30)
                 continue
 
         await asyncio.sleep(sleep_time)
