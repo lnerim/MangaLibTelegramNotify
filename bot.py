@@ -147,7 +147,7 @@ async def callback_nav(callback: CallbackQuery):
 
     data: ItemData = ItemData.unpack(callback.data)
 
-    db.publication_delete(data.item_id)
+    db.publication_delete(data.key)
 
     page = data.page
     while page >= 0:
@@ -158,7 +158,7 @@ async def callback_nav(callback: CallbackQuery):
         except IndexError:
             page -= 1
 
-    await callback.answer(f"Тайтл {data.name_title} успешно удалён!")
+    await callback.answer(f"Тайтл успешно удалён!")
     await bot.delete_message(callback.message.chat.id, callback.message.message_id)
 
 
@@ -176,10 +176,7 @@ async def keyboard(page: int, user_id: int) -> InlineKeyboardMarkup:
         builder.row(
             InlineKeyboardButton(
                 text=name,
-                callback_data=ItemData(
-                    key=key,
-                    name_title=name
-                ).pack()
+                callback_data=ItemData(key=key, page=page).pack()
             )
         )
 
