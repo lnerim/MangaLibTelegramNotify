@@ -261,7 +261,7 @@ async def main():
         task0 = tg.create_task(dp.start_polling(bot))
 
         task0.add_done_callback(
-            lambda: map(lambda x: x.cancel(), asyncio.all_tasks(task0.get_loop()))
+            lambda _: map(lambda x: x.cancel(), asyncio.all_tasks(task0.get_loop()))
         )
 
 
