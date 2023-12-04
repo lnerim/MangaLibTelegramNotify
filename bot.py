@@ -3,7 +3,7 @@ import traceback
 from datetime import datetime, UTC
 from os import getenv
 
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, BotCommand, ErrorEvent, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
@@ -39,6 +39,17 @@ async def cmd_help(message: Message):
                          parse_mode="HTML")
 
 
+async def del_msg(state: FSMContext, user_id: int, *, msg: list[int] = None):
+    messages = await state.get_data()
+    print(messages)
+    if "del_msg" in messages:
+        for m in messages["del_msg"]:
+            await bot.delete_message(user_id, m)
+
+    if msg is not None:
+        await state.update_data(del_msg=msg)
+
+
 @dp.message(StateFilter(None), Command(commands="new"))
 async def cmd_new(message: Message, state: FSMContext):
     keyboard_new: InlineKeyboardMarkup = InlineKeyboardMarkup(
@@ -48,20 +59,21 @@ async def cmd_new(message: Message, state: FSMContext):
         ]
     )
     await state.set_state(Search.wait_site)
-    await message.answer("Выберите сайт для добавления тайтла\nОтмена - /cancel", reply_markup=keyboard_new)
+    d_msg = await message.answer("Выберите сайт для добавления тайтла\nОтмена - /cancel", reply_markup=keyboard_new)
+    await del_msg(state, message.from_user.id, msg=[d_msg.message_id])
 
 
 @dp.callback_query(Search.wait_site, SearchTitle.filter())
 async def callback_search(callback: CallbackQuery, state: FSMContext):
-    await callback.message.delete()
     data: SearchTitle = SearchTitle.unpack(callback.data)
     await state.set_state(Search.wait_input)
     await state.update_data(site_id=data.site_id)
     await callback.answer()
-    await callback.message.answer("Хорошо, теперь введите название произведения...\nОтмена - /cancel")
+    d_msg = await callback.message.answer("Хорошо, теперь введите название произведения...\nОтмена - /cancel")
+    await del_msg(state, callback.from_user.id, msg=[d_msg.message_id])
 
 
-@dp.message(Search.wait_input)
+@dp.message(Search.wait_input, F.text != "/cancel")
 async def search_input(message: Message, state: FSMContext):
     data = await state.get_data()
     site_id = data["site_id"]
@@ -78,7 +90,10 @@ async def search_input(message: Message, state: FSMContext):
         return
 
     if not search_data:
-        await message.answer(f"Не удалось найти нужное произведение, попробуйте ввести название ещё раз...")
+        await search_msg.delete()
+        research = await message.answer(f"Не удалось найти нужное произведение, попробуйте ввести название ещё раз...\n"
+                                        f"Отмена - /cancel")
+        await del_msg(state, message.from_user.id, msg=[research.message_id])
         await state.set_state(Search.wait_input)
         return
 
@@ -97,12 +112,14 @@ async def search_input(message: Message, state: FSMContext):
 
     await state.update_data(names=names)
 
-    await search_msg.delete()
+    album_messages: list[Message] = await message.answer_media_group(media=album.build())
+    d_msg = await message.answer("Выберите одно из найденных произведений\nОтмена - /cancel",
+                                 reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard_input))
+    d_messages = [d_msg.message_id, *map(lambda x: x.message_id, album_messages)]
 
-    await message.answer_media_group(media=album.build())
-    await message.answer("Выберите одно из найденных произведений\nОтмена - /cancel",
-                         reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard_input))
     await state.set_state(Search.choose_title)
+    await search_msg.delete()
+    await del_msg(state, message.from_user.id, msg=d_messages)
 
 
 @dp.callback_query(Search.choose_title)
@@ -111,8 +128,8 @@ async def choose_title(callback: CallbackQuery, state: FSMContext):
     name_data = await state.get_data()
     name = name_data["names"][int(data.title_id)]
     db.publication_add(data.title_id, callback.from_user.id, data.site_id, name)
-    await callback.answer("Успешно добавлено!")
-    await callback.message.delete()
+    await bot.send_message(callback.from_user.id, "Успешно добавлено!")
+    await del_msg(state, callback.from_user.id)
     await state.clear()
 
 
@@ -203,9 +220,9 @@ async def keyboard(page: int, user_id: int) -> InlineKeyboardMarkup:
 
 @dp.message(Command(commands="cancel"))
 async def cmd_cancel(message: Message, state: FSMContext):
+    await del_msg(state, message.from_user.id)
     await state.clear()
     await message.answer("Успешно отменено!")
-    await message.delete()
 
 
 async def check_update(site: Lib):
@@ -252,7 +269,7 @@ async def set_commands():
 
 @dp.error
 async def error_message(event: ErrorEvent):
-    print(event.error_message)
+    traceback.print_tb(event.exception.__traceback__)
 
 
 async def main():
