@@ -12,14 +12,28 @@ class Lib:
 
 
 MangaLib = Lib(
-    "1", "https://test-front.mangalib.me/", "MangaLib",
-    "https://api.lib.social/api/", "https://api.lib.social/api/latest-updates",
-    "https://api.lib.social/api/manga?&site_id[]=1&q="
+    site_id="1",
+    url="https://test-front.mangalib.me/",
+    name="MangaLib",
+    api="https://api.lib.social/api/",
+    latest_updates="https://api.lib.social/api/latest-updates",
+    search="https://api.lib.social/api/manga?&site_id[]=1&q="
 )
 RanobeLib = Lib(
-    "3", "https://test-front.ranobelib.me/", "RanobeLib",
-    "https://api.lib.social/api/", "https://api.lib.social/api/latest-updates",
-    "https://api.lib.social/api/manga?&site_id[]=3&q="
+    site_id="3",
+    url="https://test-front.ranobelib.me/",
+    name="RanobeLib",
+    api="https://api.lib.social/api/",
+    latest_updates="https://api.lib.social/api/latest-updates",
+    search="https://api.lib.social/api/manga?&site_id[]=3&q="
+)
+AnimeLib = Lib(
+    site_id="5",
+    url="https://test-front.animelib.me/",
+    name="AnimeLib",
+    api="https://api.lib.social/api/",
+    latest_updates="https://api.lib.social/api/latest-updates",
+    search="https://api.lib.social/api/anime?&site_id[]=5&q="
 )
 
-SITES: dict[str, Lib] = {"1": MangaLib, "3": RanobeLib}
+SITES: dict[str, Lib] = {"1": MangaLib, "3": RanobeLib, "5": AnimeLib}

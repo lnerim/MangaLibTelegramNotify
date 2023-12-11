@@ -10,7 +10,7 @@ from aiogram.types import Message, BotCommand, ErrorEvent, InlineKeyboardMarkup,
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.utils.media_group import MediaGroupBuilder
 
-from api.enum import Lib, MangaLib, RanobeLib, SITES
+from api.enum import Lib, SITES
 from api.enum.callback import SearchTitle, TitleData, NavigationData, ItemData
 from api.requests import get_latest_updates
 from api.requests.methods import search
@@ -275,8 +275,8 @@ async def error_message(event: ErrorEvent):
 async def main():
     await set_commands()
     async with asyncio.TaskGroup() as tg:
-        tg.create_task(check_update(MangaLib))
-        tg.create_task(check_update(RanobeLib))
+        for upd_site in SITES.values():
+            tg.create_task(check_update(upd_site))
 
         task0 = tg.create_task(dp.start_polling(bot))
 
