@@ -41,7 +41,6 @@ async def cmd_help(message: Message):
 
 async def del_msg(state: FSMContext, user_id: int, *, msg: list[int] = None):
     messages = await state.get_data()
-    print(messages)
     if "del_msg" in messages:
         for m in messages["del_msg"]:
             await bot.delete_message(user_id, m)
@@ -238,9 +237,12 @@ async def check_update(site: Lib):
 
         for title in titles:
             if title.last_item_at <= latest_updates[site.site_id]:
-                latest_updates[site.site_id] = titles[0].last_item_at if not None else datetime.now()
+                latest_updates[site.site_id] = titles[0].last_item_at if not None else datetime.now(UTC)
                 break
             users = db.users_by_publication(title_id=title.title_id)
+            # Временная мера
+            print(f"{users=}") if users else ...
+            print(f"{title=}") if users else ...
             try:
                 for _, user_id in users:
                     await bot.send_photo(

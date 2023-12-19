@@ -27,14 +27,14 @@ async def _get_from_api(site: Lib, url: str) -> dict:
     return json.loads(data.content)["data"]
 
 
-async def get_latest_updates(site: Lib) -> tuple[Title]:
+async def get_latest_updates(site: Lib) -> tuple[Title, ...]:
     updates = await _get_from_api(site, site.latest_updates)
-    titles: tuple[Title] = tuple(map(Title, updates))
+    titles: tuple[Title, ...] = tuple(map(Title, updates))
     return titles
 
 
-async def search(site_id: str, name: str) -> tuple[Title]:
+async def search(site_id: str, name: str) -> tuple[Title, ...]:
     site: Lib = SITES[site_id]
     data = await _get_from_api(site, site.search + name)
-    titles: tuple[Title] = tuple(map(Title, data))
+    titles: tuple[Title, ...] = tuple(map(Title, data))
     return titles
