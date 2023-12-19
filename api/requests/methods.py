@@ -1,5 +1,3 @@
-import json
-
 from httpx import AsyncClient, Response
 
 from api.enum import Title
@@ -23,8 +21,9 @@ async def _get_from_api(site: Lib, url: str) -> dict:
                 "Site-Id": site.site_id
             }
         )
+        data.raise_for_status()
 
-    return json.loads(data.content)["data"]
+    return data.json()["data"]
 
 
 async def get_latest_updates(site: Lib) -> tuple[Title, ...]:
