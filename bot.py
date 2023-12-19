@@ -237,7 +237,7 @@ async def check_update(site: Lib):
 
         for title in titles:
             if title.last_item_at <= latest_updates[site.site_id]:
-                latest_updates[site.site_id] = titles[0].last_item_at if not None else datetime.now(UTC)
+                latest_updates[site.site_id] = titles[0].last_item_at or datetime.now(UTC)
                 break
             users = db.users_by_publication(title_id=title.title_id)
             # Временная мера
