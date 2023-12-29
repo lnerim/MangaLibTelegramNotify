@@ -4,14 +4,15 @@ from datetime import datetime, date
 
 @dataclass
 class Title:
-    title_id: int
-    site: str
-    name: str
-    rus_name: str
-    eng_name: str
-    slug: str
-    model: str
-    picture: str
+    title_id: int = 0
+    site: str = ""
+    name: str = ""
+    rus_name: str = ""
+    eng_name: str = ""
+    slug: str = ""
+    slug_url: str = ""
+    model: str = ""
+    picture: str = ""
     last_item_at: date | None = None
 
     def __init__(self, data: dict):
@@ -23,7 +24,7 @@ class Title:
         self.slug = data["slug"]
         self.slug_url = data["slug_url"]
         self.model = data["model"]
-        self.picture = data["cover"]["thumbnail"]
+        self.picture = data["cover"]["default"]
         self.last_item_at = datetime.fromisoformat(data["last_item_at"]) \
             if "last_item_at" in data else None
 
@@ -31,3 +32,8 @@ class Title:
     def url(self):
         """example: ru/manga/206--one-piece"""
         return "ru/" + self.model + "/" + self.slug_url
+
+    @property
+    def info(self):
+        """example: manga/206--one-piece"""
+        return self.model + "/" + self.slug_url
