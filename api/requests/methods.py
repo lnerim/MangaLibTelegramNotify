@@ -1,6 +1,6 @@
 from httpx import AsyncClient, Response
 
-from api.enum import Title
+from api.enum import Title, TitleInfo
 from api.enum.lib import Lib, SITES
 
 
@@ -37,3 +37,11 @@ async def search(site_id: str, name: str) -> tuple[Title, ...]:
     data = await _get_from_api(site, site.search + name)
     titles: tuple[Title, ...] = tuple(map(Title, data))
     return titles
+
+
+async def more_info(site_id: str, slug: str) -> TitleInfo:
+    site: Lib = SITES[site_id]
+    url: str = site.api + site.model + "/" + slug + site.info
+    data = await _get_from_api(site, url)
+    title_info = TitleInfo(data)
+    return title_info
