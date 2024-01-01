@@ -1,5 +1,7 @@
-from .methods import get_latest_updates
+from .methods import get_latest_updates, search, more_info
 
 __all__ = (
-    "get_latest_updates"
+    "get_latest_updates",
+    "search",
+    "more_info"
 )
