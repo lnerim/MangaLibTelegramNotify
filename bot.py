@@ -225,7 +225,8 @@ async def cmd_cancel(message: Message, state: FSMContext):
 
 
 async def check_update(site: Lib):
-    sleep_time = 10 * 60 + int(site.site_id)  # 10 минут + время от id сайта для минимизации запросов в одно время
+    await asyncio.sleep(int(site.site_id) * 10)
+
     latest_updates[site.site_id] = datetime.now(UTC)
     while True:
         try:
@@ -235,29 +236,30 @@ async def check_update(site: Lib):
             await asyncio.sleep(30)
             continue
 
+        print(site.name, ", ".join(map(lambda x: str(x.title_id), titles)))
+
         for title in titles:
             if title.last_item_at <= latest_updates[site.site_id]:
                 latest_updates[site.site_id] = titles[0].last_item_at or datetime.now(UTC)
+                print(site.name, "last check item: ", title.title_id)
                 break
+
             users = db.users_by_publication(title_id=title.title_id)
-            # Временная мера
-            print(f"{users=}") if users else ...
-            print(f"{title=}") if users else ...
-            try:
-                for _, user_id in users:
+            for _, user_id in users:
+                try:
                     await bot.send_photo(
                         chat_id=user_id,
                         photo=title.picture,
                         caption=f"Вышло обновление в произведении: "
-                                f"<a href='{site.url}{title.url}'>{title.rus_name}</a>",
+                                f"<a href='{site.url}{title.url}'>{title.rus_name or title.name}</a>",
                         parse_mode="HTML"
                     )
-            except Exception as e:
-                traceback.print_tb(e.__traceback__)
-                await asyncio.sleep(30)
-                continue
+                except Exception as e:
+                    traceback.print_tb(e.__traceback__)
+                    await asyncio.sleep(30)
+                    continue
 
-        await asyncio.sleep(sleep_time)
+        await asyncio.sleep(60 * 10)
 
 
 async def set_commands():
