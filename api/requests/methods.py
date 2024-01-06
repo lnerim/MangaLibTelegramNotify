@@ -4,7 +4,7 @@ from api.enum import Title, TitleInfo
 from api.enum.lib import Lib, SITES
 
 
-async def _get_from_api(site: Lib, url: str) -> dict:
+async def _get_from_api(site: Lib, url: str):
     async with AsyncClient(http2=True) as client:
         data: Response = await client.get(
             url=url,
@@ -27,6 +27,8 @@ async def _get_from_api(site: Lib, url: str) -> dict:
 
 
 async def get_latest_updates(site: Lib) -> tuple[Title, ...]:
+    # TODO Пусть принимает на вход время и пока не дойдёт до него, то будет слать новые запросы страниц
+    #  http://api.lib.social/api/latest-updates?page=2 и так далее...
     updates = await _get_from_api(site, site.latest_updates)
     titles: tuple[Title, ...] = tuple(map(Title, updates))
     return titles

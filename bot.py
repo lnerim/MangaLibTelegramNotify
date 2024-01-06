@@ -236,12 +236,8 @@ async def check_update(site: Lib):
             await asyncio.sleep(30)
             continue
 
-        print(site.name, ", ".join(map(lambda x: str(x.title_id), titles)))
-
         for title in titles:
             if title.last_item_at <= latest_updates[site.site_id]:
-                latest_updates[site.site_id] = titles[0].last_item_at or datetime.now(UTC)
-                print(site.name, "last check item: ", title.title_id)
                 break
 
             users = db.users_by_publication(title_id=title.title_id)
@@ -258,6 +254,8 @@ async def check_update(site: Lib):
                     traceback.print_tb(e.__traceback__)
                     await asyncio.sleep(30)
                     continue
+
+        latest_updates[site.site_id] = titles[0].last_item_at or datetime.now(UTC)
 
         await asyncio.sleep(60 * 10)
 
@@ -279,15 +277,14 @@ async def error_message(event: ErrorEvent):
 async def main():
     await set_commands()
     async with asyncio.TaskGroup() as tg:
+        tg.create_task(dp.start_polling(bot))
+
         for upd_site in SITES.values():
             tg.create_task(check_update(upd_site))
 
-        task0 = tg.create_task(dp.start_polling(bot))
-
-        task0.add_done_callback(
-            lambda _: map(lambda x: x.cancel(), asyncio.all_tasks(task0.get_loop()))
-        )
-
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except (asyncio.CancelledError, KeyboardInterrupt):
+        ...
