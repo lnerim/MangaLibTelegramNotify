@@ -230,16 +230,13 @@ async def check_update(site: Lib):
     latest_updates[site.site_id] = datetime.now(UTC)
     while True:
         try:
-            titles = await get_latest_updates(site)
+            latest_updates[site.site_id], titles = await get_latest_updates(site, latest_updates[site.site_id])
         except Exception as e:
             traceback.print_tb(e.__traceback__)
             await asyncio.sleep(30)
             continue
 
         for title in titles:
-            if title.last_item_at <= latest_updates[site.site_id]:
-                break
-
             users = db.users_by_publication(title_id=title.title_id)
             for _, user_id in users:
                 try:
@@ -254,8 +251,6 @@ async def check_update(site: Lib):
                     traceback.print_tb(e.__traceback__)
                     await asyncio.sleep(30)
                     continue
-
-        latest_updates[site.site_id] = titles[0].last_item_at or datetime.now(UTC)
 
         await asyncio.sleep(60 * 10)
 
@@ -284,7 +279,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except (asyncio.CancelledError, KeyboardInterrupt):
-        ...
+    asyncio.run(main())

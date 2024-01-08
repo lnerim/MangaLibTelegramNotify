@@ -1,3 +1,6 @@
+from asyncio import sleep
+from datetime import datetime
+
 from httpx import AsyncClient, Response
 
 from api.enum import Title, TitleInfo
@@ -26,12 +29,20 @@ async def _get_from_api(site: Lib, url: str):
     return data.json()["data"]
 
 
-async def get_latest_updates(site: Lib) -> tuple[Title, ...]:
-    # TODO Пусть принимает на вход время и пока не дойдёт до него, то будет слать новые запросы страниц
-    #  http://api.lib.social/api/latest-updates?page=2 и так далее...
-    updates = await _get_from_api(site, site.latest_updates)
-    titles: tuple[Title, ...] = tuple(map(Title, updates))
-    return titles
+async def get_latest_updates(site: Lib, last_update: datetime) -> tuple[datetime, tuple[Title, ...]]:
+    updates: list[dict, ...] = await _get_from_api(site, site.latest_updates)
+
+    page = 2
+    while datetime.fromisoformat(updates[-1]["last_item_at"]) > last_update:
+        await sleep(0.5)
+        updates += await _get_from_api(site, site.latest_updates + f"?page={page}")
+        page += 1
+
+    titles = map(Title, updates)
+    filtered_titles: tuple[Title, ...] = tuple(filter(lambda t: t.last_item_at > last_update, titles))
+    new_update: datetime = filtered_titles[0].last_item_at if filtered_titles else last_update
+
+    return new_update, filtered_titles
 
 
 async def search(site_id: str, name: str) -> tuple[Title, ...]:
