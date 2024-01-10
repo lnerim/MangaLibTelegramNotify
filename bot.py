@@ -16,27 +16,12 @@ from api.requests import get_latest_updates
 from api.requests.methods import search
 from bot import BotDataBase
 from bot.states import Search
+from handlers import common
 
 bot = Bot(token=getenv("TOKEN"))
 dp = Dispatcher()
 db = BotDataBase()
 latest_updates: dict[str, datetime] = dict()
-
-
-@dp.message(Command(commands="start"))
-async def cmd_start_private(message: Message):
-    await message.answer(f"👋 Привет, {message.from_user.full_name}!\n\n"
-                         f"🔄 Этот бот поможет тебе получать уведомления об обновлениях "
-                         f"с сайтов семейства LIB прямо в Telegram.\n"
-                         f"Чтобы получить справку по использованию бота, введите /help")
-
-
-@dp.message(Command(commands="help"))
-async def cmd_help(message: Message):
-    await message.answer(f"👀 Чтобы начать отслеживание тайтла, введите /new\n"
-                         f"Чтобы узнать список своих подписок, введите /list, а чтобы удалить произведение, "
-                         f"нажмите на кнопку с его названием в этом списке.",
-                         parse_mode="HTML")
 
 
 async def del_msg(state: FSMContext, user_id: int, *, msg: list[int] = None):
@@ -270,6 +255,8 @@ async def error_message(event: ErrorEvent):
 
 
 async def main():
+    dp.include_router(common)
+
     await set_commands()
     async with asyncio.TaskGroup() as tg:
         tg.create_task(dp.start_polling(bot))
