@@ -5,3 +5,4 @@ class Search(StatesGroup):
     wait_site = State()
     wait_input = State()
     choose_title = State()
+    add_title = State()

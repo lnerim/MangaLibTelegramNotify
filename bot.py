@@ -32,6 +32,7 @@ async def main():
     dp.include_router(common)
     dp.include_router(title_add)
     dp.include_router(title_list)
+    dp.include_router(default)
 
     await set_commands()
     async with asyncio.TaskGroup() as tg:

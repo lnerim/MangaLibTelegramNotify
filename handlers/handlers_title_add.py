@@ -1,14 +1,15 @@
 import traceback
 
 from aiogram import Router, Bot
+from aiogram.enums import ParseMode
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from aiogram.utils.media_group import MediaGroupBuilder
 
-from api.enum import SITES
+from api.enum import SITES, TitleInfo
 from api.enum.callback import SearchTitle, TitleData
-from api.requests import search
+from api.requests import search, more_info
 from bot_utils import db
 from bot_utils.states import Search
 from handlers.del_msg import delete_messages
@@ -69,17 +70,17 @@ async def search_input(message: Message, state: FSMContext, to_delete: list):
     album = MediaGroupBuilder()
     keyboard_input: list[list[InlineKeyboardButton]] = []
 
-    names: dict[int, str] = dict()
+    slugs: dict[int, str] = dict()
     for num, title in enumerate(search_data[:10]):
-        names[title.title_id] = title.rus_name
+        slugs[title.title_id] = title.slug
         album.add_photo(media=title.picture)
         keyboard_input.append([
             InlineKeyboardButton(
-                text=title.rus_name,
+                text=title.rus_name or title.name,
                 callback_data=TitleData(title_id=title.title_id, site_id=site_id).pack())
         ])
 
-    await state.update_data(names=names)
+    await state.update_data(slugs=slugs)
 
     album_messages: list[Message] = await message.answer_media_group(media=album.build())
     d_msg = await message.answer("Выберите одно из найденных произведений\nОтмена - /cancel",
@@ -94,10 +95,51 @@ async def search_input(message: Message, state: FSMContext, to_delete: list):
 
 @router.callback_query(Search.choose_title)
 @delete_messages
-async def choose_title(callback: CallbackQuery, state: FSMContext, bot: Bot):
+async def choose_title(callback: CallbackQuery, state: FSMContext, bot: Bot, to_delete: list):
     data: TitleData = TitleData.unpack(callback.data)
     name_data = await state.get_data()
-    name = name_data["names"][int(data.title_id)]
+    slug = name_data["slugs"][int(data.title_id)]
+
+    info_msg = await bot.send_message(callback.from_user.id, "Загрузка информации...")
+    t: TitleInfo = await more_info(data.site_id, slug)
+    await info_msg.delete()
+
+    caption = f"<i>{t.rus_name or t.name}</i>\n"\
+              f"<b>Возрастное ограничение:</b> {t.ageRestriction} <b>Рейтинг:</b> {t.rating}\n"\
+              f"<b>Тип:</b> {t.type}\n"\
+              f"{t.releaseDateString} {t.status}\n"\
+              f"<b>Авторство:</b> {", ".join(t.authors)}\n"\
+              f"<b>Жанры:</b> {", ".join(t.genres)}\n"\
+              f"<b>Теги:</b> {", ".join(t.tags)}\n\n"
+
+    len_to_summary = 1024 - len(caption) - 19
+    summary = t.summary[:len_to_summary - 3] + "..." if len(t.summary) > len_to_summary else t.summary
+
+    d_msg = await bot.send_photo(
+        chat_id=callback.from_user.id,
+        photo=t.picture,
+        caption=caption + summary + f"\n\nОтменить: /cancel",  # cancel len = 19
+        parse_mode=ParseMode.HTML,
+        reply_markup=InlineKeyboardMarkup(
+            inline_keyboard=[[
+                InlineKeyboardButton(
+                    text="Добавить",
+                    callback_data=TitleData(title_id=t.title_id, site_id=data.site_id).pack())
+            ]]
+        )
+    )
+    to_delete.append(d_msg)
+
+    await state.update_data(name=t.rus_name or t.name)
+    await state.set_state(Search.add_title)
+
+
+@router.callback_query(Search.add_title)
+@delete_messages
+async def add_title(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    data: TitleData = TitleData.unpack(callback.data)
+    name_data = await state.get_data()
+    name = name_data["name"]
     db.publication_add(data.title_id, callback.from_user.id, data.site_id, name)
     await bot.send_message(callback.from_user.id, "Успешно добавлено!")
     await state.clear()
