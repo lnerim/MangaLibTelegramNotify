@@ -57,5 +57,4 @@ class BotDataBase:
             ).fetchall()
 
 
-if __name__ == '__main__':
-    BotDataBase(":memory:")
+db = BotDataBase()

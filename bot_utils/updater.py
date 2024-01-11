@@ -1,0 +1,40 @@
+import asyncio
+import traceback
+from datetime import datetime, UTC
+
+from aiogram import Bot
+
+from api.enum import Lib
+from api.requests import get_latest_updates
+from bot_utils import db
+
+
+async def check_update(site: Lib, bot: Bot):
+    await asyncio.sleep(int(site.site_id) * 10)
+
+    latest_updates: datetime = datetime.now(UTC)
+    while True:
+        try:
+            latest_updates, titles = await get_latest_updates(site, latest_updates)
+        except Exception as e:
+            traceback.print_tb(e.__traceback__)
+            await asyncio.sleep(30)
+            continue
+
+        for title in titles:
+            users = db.users_by_publication(title_id=title.title_id)
+            for _, user_id in users:
+                try:
+                    await bot.send_photo(
+                        chat_id=user_id,
+                        photo=title.picture,
+                        caption=f"Вышло обновление в произведении: "
+                                f"<a href='{site.url}{title.url}'>{title.rus_name or title.name}</a>",
+                        parse_mode="HTML"
+                    )
+                except Exception as e:
+                    traceback.print_tb(e.__traceback__)
+                    await asyncio.sleep(30)
+                    continue
+
+        await asyncio.sleep(60 * 10)
