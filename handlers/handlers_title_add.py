@@ -108,9 +108,9 @@ async def choose_title(callback: CallbackQuery, state: FSMContext, bot: Bot, to_
               f"<b>Возрастное ограничение:</b> {t.ageRestriction} <b>Рейтинг:</b> {t.rating}\n"\
               f"<b>Тип:</b> {t.type}\n"\
               f"{t.releaseDateString} {t.status}\n"\
-              f"<b>Авторство:</b> {", ".join(t.authors)}\n"\
-              f"<b>Жанры:</b> {", ".join(t.genres)}\n"\
-              f"<b>Теги:</b> {", ".join(t.tags)}\n\n"
+              f"<b>Авторство:</b> {', '.join(t.authors)}\n"\
+              f"<b>Жанры:</b> {', '.join(t.genres)}\n"\
+              f"<b>Теги:</b> {', '.join(t.tags)}\n\n"
 
     len_to_summary = 1024 - len(caption) - 19
     summary = t.summary[:len_to_summary - 3] + "..." if len(t.summary) > len_to_summary else t.summary
