@@ -13,7 +13,10 @@ def delete_messages(func):
         messages = await state.get_data()
         if "del_msg" in messages:
             for m in messages["del_msg"]:
-                await bot.delete_message(message.from_user.id, m.message_id)
+                try:
+                    await bot.delete_message(message.from_user.id, m.message_id)
+                except Exception as e:
+                    print(e)
 
         to_delete: list[Message] = []
         kwargs["to_delete"] = to_delete

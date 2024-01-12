@@ -1,4 +1,4 @@
-import traceback
+from traceback import print_tb
 
 from aiogram import Router, Bot
 from aiogram.enums import ParseMode
@@ -56,7 +56,7 @@ async def search_input(message: Message, state: FSMContext, to_delete: list):
     except Exception as e:
         await search_msg.delete()
         await message.answer("Поиск не удался, попробуйте позже...")
-        traceback.print_tb(e.__traceback__)
+        print_tb(e.__traceback__)
         return
 
     if not search_data:
@@ -101,8 +101,14 @@ async def choose_title(callback: CallbackQuery, state: FSMContext, bot: Bot, to_
     slug = name_data["slugs"][int(data.title_id)]
 
     info_msg = await bot.send_message(callback.from_user.id, "Загрузка информации...")
-    t: TitleInfo = await more_info(data.site_id, slug)
-    await info_msg.delete()
+    try:
+        t: TitleInfo = await more_info(data.site_id, slug)
+    except Exception as e:
+        print_tb(e.__traceback__)
+        await bot.send_message(callback.from_user.id, "Ошибка загрузки информации, тайтл не добавлен.")
+        return
+    finally:
+        await info_msg.delete()
 
     caption = f"<i>{t.rus_name or t.name}</i>\n"\
               f"<b>Возрастное ограничение:</b> {t.ageRestriction} <b>Рейтинг:</b> {t.rating}\n"\
