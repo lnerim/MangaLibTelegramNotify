@@ -1,12 +1,18 @@
 import inspect
 
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, ErrorEvent
 
 
 def delete_messages(func):
     async def wrapper(*args, **kwargs):
-        message: Message | CallbackQuery = args[0]
+        arg = args[0]
+
+        if isinstance(arg, ErrorEvent):
+            user_id = arg.update.message.from_user.id
+        else:  # Message, CallbackQuery
+            user_id = arg.from_user.id
+
         state: FSMContext = kwargs["state"]
         bot = kwargs["bot"]
 
@@ -14,7 +20,7 @@ def delete_messages(func):
         if "del_msg" in messages:
             for m in messages["del_msg"]:
                 try:
-                    await bot.delete_message(message.from_user.id, m.message_id)
+                    await bot.delete_message(user_id, m.message_id)
                 except Exception as e:
                     print(e)
 
