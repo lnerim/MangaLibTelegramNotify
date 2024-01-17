@@ -1,4 +1,4 @@
-from traceback import print_tb
+import logging
 
 from aiogram import Router, Bot
 from aiogram.enums import ParseMode
@@ -54,13 +54,13 @@ async def search_input(message: Message, state: FSMContext, to_delete: list):
     try:
         search_data = await search(site_id, search_text)
     except Exception as e:
-        await search_msg.delete()
         await message.answer("Поиск не удался, попробуйте позже...")
-        print_tb(e.__traceback__)
+        logging.exception(e)
         return
+    finally:
+        await search_msg.delete()
 
     if not search_data:
-        await search_msg.delete()
         research = await message.answer(f"Не удалось найти нужное произведение, попробуйте ввести название ещё раз...\n"
                                         f"Отмена - /cancel")
         to_delete.append(research)
@@ -71,8 +71,10 @@ async def search_input(message: Message, state: FSMContext, to_delete: list):
     keyboard_input: list[list[InlineKeyboardButton]] = []
 
     slugs: dict[int, str] = dict()
+    names: dict[int, str] = dict()
     for num, title in enumerate(search_data[:10]):
         slugs[title.title_id] = title.slug
+        names[title.title_id] = title.rus_name or title.name
         album.add_photo(media=title.picture)
         keyboard_input.append([
             InlineKeyboardButton(
@@ -81,13 +83,13 @@ async def search_input(message: Message, state: FSMContext, to_delete: list):
         ])
 
     await state.update_data(slugs=slugs)
+    await state.update_data(names=names)
 
     album_messages: list[Message] = await message.answer_media_group(media=album.build())
     d_msg = await message.answer("Выберите одно из найденных произведений\nОтмена - /cancel",
                                  reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard_input))
 
     await state.set_state(Search.choose_title)
-    await search_msg.delete()
 
     to_delete.append(d_msg)
     to_delete += album_messages
@@ -96,16 +98,19 @@ async def search_input(message: Message, state: FSMContext, to_delete: list):
 @router.callback_query(Search.choose_title)
 @delete_messages
 async def choose_title(callback: CallbackQuery, state: FSMContext, bot: Bot, to_delete: list):
-    data: TitleData = TitleData.unpack(callback.data)
-    name_data = await state.get_data()
-    slug = name_data["slugs"][int(data.title_id)]
+    title_data: TitleData = TitleData.unpack(callback.data)
+    state_data = await state.get_data()
+    slug = state_data["slugs"][int(title_data.title_id)]
 
     info_msg = await bot.send_message(callback.from_user.id, "Загрузка информации...")
     try:
-        t: TitleInfo = await more_info(data.site_id, slug)
+        t: TitleInfo = await more_info(title_data.site_id, slug)
     except Exception as e:
-        print_tb(e.__traceback__)
-        await bot.send_message(callback.from_user.id, "Ошибка загрузки информации, тайтл не добавлен.")
+        logging.exception(f"Ошибка получения расширенной информации о тайтле {title_data.site_id=} {slug}")
+        logging.exception(e)
+        await bot.send_message(callback.from_user.id, "Ошибка загрузки дополнительной информации...")
+        # Основная информация известна, добавляем без показа расширенной информации
+        await add_title(callback, state, bot)
         return
     finally:
         await info_msg.delete()
@@ -130,22 +135,27 @@ async def choose_title(callback: CallbackQuery, state: FSMContext, bot: Bot, to_
             inline_keyboard=[[
                 InlineKeyboardButton(
                     text="Добавить",
-                    callback_data=TitleData(title_id=t.title_id, site_id=data.site_id).pack())
+                    callback_data=TitleData(title_id=t.title_id, site_id=title_data.site_id).pack())
             ]]
         )
     )
     to_delete.append(d_msg)
 
-    await state.update_data(name=t.rus_name or t.name)
     await state.set_state(Search.add_title)
 
 
 @router.callback_query(Search.add_title)
 @delete_messages
+async def add_title_handler(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    await add_title(callback, state, bot)
+
+
 async def add_title(callback: CallbackQuery, state: FSMContext, bot: Bot):
-    data: TitleData = TitleData.unpack(callback.data)
+    title_data: TitleData = TitleData.unpack(callback.data)
     name_data = await state.get_data()
-    name = name_data["name"]
-    db.publication_add(data.title_id, callback.from_user.id, data.site_id, name)
+    name = name_data["names"][int(title_data.title_id)]
+
+    db.publication_add(title_data.title_id, callback.from_user.id, title_data.site_id, name)
+
     await bot.send_message(callback.from_user.id, "Успешно добавлено!")
     await state.clear()

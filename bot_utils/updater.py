@@ -1,5 +1,5 @@
 import asyncio
-import traceback
+import logging
 from datetime import datetime, UTC
 
 from aiogram import Bot
@@ -16,8 +16,10 @@ async def check_update(site: Lib, bot: Bot):
     while True:
         try:
             latest_updates, titles = await get_latest_updates(site, latest_updates)
+            logging.info(f"Получено обновление {site.name} {latest_updates=} {len(titles)=}")
         except Exception as e:
-            traceback.print_tb(e.__traceback__)
+            logging.exception(f"Обновление {site.name} не получено")
+            logging.exception(e)
             await asyncio.sleep(30)
             continue
 
@@ -33,7 +35,8 @@ async def check_update(site: Lib, bot: Bot):
                         parse_mode="HTML"
                     )
                 except Exception as e:
-                    traceback.print_tb(e.__traceback__)
+                    logging.exception(f"Пользователь {user_id} не получил обновление {title.slug=}")
+                    logging.exception(e)
                     await asyncio.sleep(30)
                     continue
 

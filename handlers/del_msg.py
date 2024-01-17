@@ -1,4 +1,5 @@
 import inspect
+import logging
 
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ErrorEvent
@@ -22,7 +23,7 @@ def delete_messages(func):
                 try:
                     await bot.delete_message(user_id, m.message_id)
                 except Exception as e:
-                    print(e)
+                    logging.info(e)
 
         to_delete: list[Message] = []
         kwargs["to_delete"] = to_delete
