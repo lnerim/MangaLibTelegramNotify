@@ -11,8 +11,10 @@ class ItemData(CallbackData, prefix="item"):
     page: int
 
 
-class DeleteItem(CallbackData, prefix="del"):
-    key: int
+class ItemDataDelete(CallbackData, prefix="delete"):
+    key: int | str
+    page: int
+    delete: bool
 
 
 class NavigationData(CallbackData, prefix="nav"):

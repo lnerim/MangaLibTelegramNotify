@@ -157,5 +157,5 @@ async def add_title(callback: CallbackQuery, state: FSMContext, bot: Bot):
 
     db.publication_add(title_data.title_id, callback.from_user.id, title_data.site_id, name)
 
-    await bot.send_message(callback.from_user.id, "Успешно добавлено!")
+    await bot.send_message(callback.from_user.id, "Успешно добавлено!\nСписок подписок /list")
     await state.clear()

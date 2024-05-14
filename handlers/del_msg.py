@@ -1,29 +1,30 @@
 import inspect
-import logging
 
+from aiogram import Bot
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, ErrorEvent
+from aiogram.types import Message, ErrorEvent, CallbackQuery
 
 
-def delete_messages(func):
-    async def wrapper(*args, **kwargs):
+def delete_messages(func) -> callable:
+    async def wrapper(*args, **kwargs) -> None:
         arg = args[0]
 
-        if isinstance(arg, ErrorEvent):
-            user_id = arg.update.message.from_user.id
-        else:  # Message, CallbackQuery
-            user_id = arg.from_user.id
+        match arg:
+            case ErrorEvent():
+                user_id = arg.update.message.from_user.id
+            case Message() | CallbackQuery():
+                user_id = arg.from_user.id
+            case _:
+                raise NotImplementedError(f"{type(arg)=} is not support in delete_messages")
 
         state: FSMContext = kwargs["state"]
-        bot = kwargs["bot"]
+        bot: Bot = kwargs["bot"]
 
-        messages = await state.get_data()
+        messages: dict = await state.get_data()
         if "del_msg" in messages:
-            for m in messages["del_msg"]:
-                try:
-                    await bot.delete_message(user_id, m.message_id)
-                except Exception as e:
-                    logging.info(e)
+            # messages["del_msg"]: list[Message]
+            messages_ids: list[int] = list(map(lambda x: x.message_id, messages["del_msg"]))
+            await bot.delete_messages(user_id, messages_ids)
 
         to_delete: list[Message] = []
         kwargs["to_delete"] = to_delete

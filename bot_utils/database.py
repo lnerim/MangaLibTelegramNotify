@@ -56,5 +56,12 @@ class BotDataBase:
                 f"SELECT `{TITLES_KEY}`, `{TITLES_NAME}` FROM `{TABLE_TITLES}` WHERE `{TITLES_USER_ID}` = ?", (user_id,)
             ).fetchall()
 
+    def publication_name_by_key(self, key: int) -> str:
+        with self.connection:
+            data = self.cursor.execute(
+                f"SELECT `{TITLES_NAME}` FROM `{TABLE_TITLES}` WHERE `{TITLES_KEY}` = ?", (key,)
+            ).fetchone()
+            return data[0] if data is not None else "тайтл"
+
 
 db = BotDataBase()
