@@ -27,7 +27,7 @@ MangaLib = Lib(
 )
 RanobeLib = Lib(
     site_id="3",
-    url="https://test-front.ranobelib.me/",
+    url="https://ranobelib.me/",
     name="RanobeLib",
     api="https://api.lib.social/api/",
     model="manga",
@@ -39,7 +39,7 @@ RanobeLib = Lib(
 )
 AnimeLib = Lib(
     site_id="5",
-    url="https://test-front.animelib.me/",
+    url="https://anilib.me/",
     name="AnimeLib",
     api="https://api.lib.social/api/",
     model="anime",
