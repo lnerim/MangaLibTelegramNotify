@@ -21,8 +21,8 @@ async def default_callback(callback: CallbackQuery, state: FSMContext, bot: Bot)
 def text_by_state(current_state: str) -> str:
     match current_state:
         case None:
-            return "Не знаешь что делать?\nЕсть мануал /help\nДобавить новый тайтл /new"
+            return "❗️ Не знаешь что делать?\nЕсть мануал /help\nДобавить новый тайтл /new"
         case s if s.startswith("Search"):
-            return "В данный момент вы добавляете новый тайтл.\nОтменить поиск /cancel"
+            return "❗️ В данный момент вы добавляете новый тайтл.\nОтменить поиск /cancel"
         case _:
-            return "Действие невозможно, возможно стоит отменить предыдущее действие /cancel"
+            return "❗️ Действие невозможно, возможно стоит отменить предыдущее действие /cancel"

@@ -29,11 +29,8 @@ def delete_messages(func) -> callable:
         to_delete: list[Message] = []
         kwargs["to_delete"] = to_delete
 
-        new_kwargs = dict()
         func_args = inspect.getfullargspec(func).args
-        for i in kwargs.keys():
-            if i in func_args:
-                new_kwargs[i] = kwargs[i]
+        new_kwargs = {key: value for (key, value) in kwargs.items() if key in func_args}
 
         await func(*args, **new_kwargs)
 

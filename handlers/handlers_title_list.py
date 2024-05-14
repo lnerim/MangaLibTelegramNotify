@@ -14,10 +14,11 @@ router = Router()
 async def cmd_list(message: Message):
     try:
         builder = await keyboard(0, message.from_user.id)
-        await message.answer(text="Список подписок\nЧтобы удалить тайтл, выберите его из списка", reply_markup=builder)
+        await message.answer(text="📌 Список подписок\nЧтобы удалить тайтл, выберите его из списка",
+                             reply_markup=builder)
     except IndexError:
-        await message.answer("Сейчас у Вас нет активных подписок, чтобы начать отслеживание, пожалуйста, "
-                             "ознакомьтесь с инструкцией /help")
+        await message.answer("📪 Сейчас у Вас нет активных подписок, чтобы начать отслеживание, "
+                             "пожалуйста, ознакомьтесь с инструкцией /help")
 
 
 @router.callback_query(NavigationData.filter())
@@ -29,12 +30,12 @@ async def callback_nav(callback: CallbackQuery, bot: Bot):
     try:
         builder = await keyboard(data.page, callback.from_user.id)
         await bot.send_message(callback.from_user.id,
-                               text="Список подписок\nЧтобы удалить тайтл, выберите его из списка",
+                               text="📌 Список подписок\nЧтобы удалить тайтл, выберите его из списка",
                                reply_markup=builder)
     except IndexError:
         await bot.send_message(callback.from_user.id,
-                               text="Сейчас у Вас нет активных подписок, чтобы начать отслеживание, "
-                                    "пожалуйста, ""ознакомьтесь с инструкцией /help")
+                               text="📪 Сейчас у Вас нет активных подписок, чтобы начать отслеживание, "
+                                    "пожалуйста, ознакомьтесь с инструкцией /help")
     finally:
         await callback.answer()
 
@@ -47,19 +48,19 @@ async def callback_item(callback: CallbackQuery):
     builder = InlineKeyboardBuilder()
     builder.add(
         InlineKeyboardButton(
-            text="Да",
+            text="🗑 Да",
             callback_data=ItemDataDelete(key=data.key, page=data.page, delete=True).pack()
         )
     )
     builder.add(
         InlineKeyboardButton(
-            text="Нет",
+            text="💾 Нет",
             callback_data=ItemDataDelete(key=data.key, page=data.page, delete=False).pack()
         )
     )
 
     name_title: str = db.publication_name_by_key(data.key)
-    await callback.message.answer(text=f"Удалить <b>{name_title}</b> из списка отслеживаемых?",
+    await callback.message.answer(text=f"❌ Удалить <b>{name_title}</b> из списка отслеживаемых?",
                                   parse_mode=ParseMode.HTML,
                                   reply_markup=builder.as_markup())
 
@@ -79,10 +80,14 @@ async def callback_nav(callback: CallbackQuery, bot: Bot):
         try:
             builder = await keyboard(page, callback.from_user.id)
             await bot.send_message(callback.from_user.id,
-                                   text="Список подписок\nЧтобы удалить тайтл, выберите его из списка",
+                                   text="📌 Список подписок\nЧтобы удалить тайтл, выберите его из списка",
                                    reply_markup=builder)
             break
         except IndexError:
+            if page == 0:
+                await bot.send_message(callback.from_user.id,
+                                       text="📪 Сейчас у Вас нет активных подписок, чтобы начать отслеживание, "
+                                            "пожалуйста, ознакомьтесь с инструкцией /help")
             page -= 1
 
     await bot.delete_message(callback.from_user.id, callback.message.message_id)

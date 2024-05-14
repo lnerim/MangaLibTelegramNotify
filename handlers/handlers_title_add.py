@@ -27,7 +27,7 @@ async def cmd_new(message: Message, state: FSMContext, to_delete: list):
         ]
     )
     await state.set_state(Search.wait_site)
-    d_msg = await message.answer("Выберите сайт для добавления тайтла\nОтмена - /cancel", reply_markup=keyboard_new)
+    d_msg = await message.answer("📌 Выберите сайт для добавления тайтла\nОтмена - /cancel", reply_markup=keyboard_new)
     to_delete.append(d_msg)
 
 
@@ -38,7 +38,7 @@ async def callback_search(callback: CallbackQuery, state: FSMContext, to_delete:
     await state.set_state(Search.wait_input)
     await state.update_data(site_id=data.site_id)
     await callback.answer()
-    d_msg = await callback.message.answer("Хорошо, теперь введите название произведения...\nОтмена - /cancel")
+    d_msg = await callback.message.answer("📌 Хорошо, теперь введите название произведения...\nОтмена - /cancel")
     to_delete.append(d_msg)
 
 
@@ -49,20 +49,21 @@ async def search_input(message: Message, state: FSMContext, to_delete: list):
     site_id = data["site_id"]
     search_text = message.text
 
-    search_msg = await message.answer("Поиск...")
+    search_msg = await message.answer("🔍 Поиск...")
 
     try:
         search_data = await search(site_id, search_text)
     except Exception as e:
-        await message.answer("Поиск не удался, попробуйте позже...")
+        await message.answer("🔍 Поиск не удался, попробуйте позже...")
         logging.exception(e)
         return
     finally:
         await search_msg.delete()
 
     if not search_data:
-        research = await message.answer(f"Не удалось найти нужное произведение, попробуйте ввести название ещё раз...\n"
-                                        f"Отмена - /cancel")
+        research = await message.answer("🔍 Не удалось найти нужное произведение, "
+                                        "попробуйте ввести название ещё раз...\n"
+                                        "Отмена - /cancel")
         to_delete.append(research)
         await state.set_state(Search.wait_input)
         return
@@ -86,7 +87,7 @@ async def search_input(message: Message, state: FSMContext, to_delete: list):
     await state.update_data(names=names)
 
     album_messages: list[Message] = await message.answer_media_group(media=album.build())
-    d_msg = await message.answer("Выберите одно из найденных произведений\nОтмена - /cancel",
+    d_msg = await message.answer("📌 Выберите одно из найденных произведений\nОтмена - /cancel",
                                  reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard_input))
 
     await state.set_state(Search.choose_title)
@@ -134,7 +135,7 @@ async def choose_title(callback: CallbackQuery, state: FSMContext, bot: Bot, to_
         reply_markup=InlineKeyboardMarkup(
             inline_keyboard=[[
                 InlineKeyboardButton(
-                    text="Добавить",
+                    text="✏️ Добавить",
                     callback_data=TitleData(title_id=t.title_id, site_id=title_data.site_id).pack())
             ]]
         )
@@ -157,5 +158,5 @@ async def add_title(callback: CallbackQuery, state: FSMContext, bot: Bot):
 
     db.publication_add(title_data.title_id, callback.from_user.id, title_data.site_id, name)
 
-    await bot.send_message(callback.from_user.id, "Успешно добавлено!\nСписок подписок /list")
+    await bot.send_message(callback.from_user.id, "✅ Успешно добавлено!\nСписок подписок /list")
     await state.clear()
