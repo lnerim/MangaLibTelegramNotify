@@ -1,4 +1,6 @@
+import asyncio
 import inspect
+from asyncio import TaskGroup, Task
 
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
@@ -7,6 +9,13 @@ from aiogram.types import Message, ErrorEvent, CallbackQuery
 
 def delete_messages(func) -> callable:
     async def wrapper(*args, **kwargs) -> None:
+        state: FSMContext = kwargs["state"]
+        state_data: dict = await state.get_data()
+
+        if "timer" in state_data:
+            old_timer: Task = state_data["timer"]
+            old_timer.cancel()
+
         arg = args[0]
 
         match arg:
@@ -17,13 +26,11 @@ def delete_messages(func) -> callable:
             case _:
                 raise NotImplementedError(f"{type(arg)=} is not support in delete_messages")
 
-        state: FSMContext = kwargs["state"]
         bot: Bot = kwargs["bot"]
 
-        messages: dict = await state.get_data()
-        if "del_msg" in messages:
-            # messages["del_msg"]: list[Message]
-            messages_ids: list[int] = list(map(lambda x: x.message_id, messages["del_msg"]))
+        if "del_msg" in state_data:
+            # state_data["del_msg"]: list[Message]
+            messages_ids: list[int] = list(map(lambda x: x.message_id, state_data["del_msg"]))
             await bot.delete_messages(user_id, messages_ids)
 
         to_delete: list[Message] = []
@@ -37,4 +44,23 @@ def delete_messages(func) -> callable:
         if to_delete:
             await state.update_data(del_msg=to_delete)
 
+        async with TaskGroup() as tg:
+            new_timer: Task = tg.create_task(delete_messages_after_long_time(state, bot, user_id))
+            await state.update_data(timer=new_timer)
+
     return wrapper
+
+
+async def delete_messages_after_long_time(state: FSMContext, bot: Bot, user_id: int | str):
+    # Через 5 минут сообщения удалятся, если нет других новых сообщений, зависящих от декоратора delete_messages
+    await asyncio.sleep(150 + 150)
+
+    state_data: dict = await state.get_data()
+
+    if "del_msg" in state_data:
+        messages_ids: list[int] = list(map(lambda x: x.message_id, state_data["del_msg"]))
+        await bot.delete_messages(user_id, messages_ids)
+
+    await state.clear()
+
+    await bot.send_message(user_id, "♻️ Превышено время ожидания, действие отменено!", disable_notification=True)
