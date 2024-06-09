@@ -57,6 +57,9 @@ async def delete_messages_after_long_time(state: FSMContext, bot: Bot, user_id: 
 
     state_data: dict = await state.get_data()
 
+    if not state_data:
+        return
+
     if "del_msg" in state_data:
         messages_ids: list[int] = list(map(lambda x: x.message_id, state_data["del_msg"]))
         await bot.delete_messages(user_id, messages_ids)
