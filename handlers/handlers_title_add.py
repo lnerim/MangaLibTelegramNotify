@@ -12,7 +12,7 @@ from api.enum.callback import SearchTitle, TitleData
 from api.requests import search, more_info
 from bot_utils import db
 from bot_utils.states import Search
-from handlers.del_msg import delete_messages
+from handlers import delete_messages
 
 router = Router()
 
@@ -159,4 +159,3 @@ async def add_title(callback: CallbackQuery, state: FSMContext, bot: Bot):
     db.publication_add(title_data.title_id, callback.from_user.id, title_data.site_id, name)
 
     await bot.send_message(callback.from_user.id, "✅ Успешно добавлено!\nСписок подписок /list")
-    await state.clear()

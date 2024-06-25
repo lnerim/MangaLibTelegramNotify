@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 from datetime import datetime, date
 
@@ -16,6 +17,8 @@ class Title:
     last_item_at: date | None = None
 
     def __init__(self, data: dict):
+        logging.debug(f"TitleInfo: {data=}")
+
         self.title_id = data["id"]
         self.site = data["site"]
         self.name = data["name"]

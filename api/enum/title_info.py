@@ -24,6 +24,6 @@ class TitleInfo(Title):
         self.rating = data["rating"]["average"]
         self.releaseDateString = data["releaseDateString"]
         self.status = data["status"]["label"]
-        self.summary = data["summary"]
+        self.summary = data["summary"] or "Описание отсутствует"
         self.tags = tuple(map(lambda x: x["name"], data["tags"]))
         self.type = data["type"]["label"]

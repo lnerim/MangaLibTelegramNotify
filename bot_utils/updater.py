@@ -16,7 +16,7 @@ async def check_update(site: Lib, bot: Bot):
     while True:
         try:
             latest_updates, titles = await get_latest_updates(site, latest_updates)
-            logging.info(f"Получено обновление {site.name} {latest_updates=} {len(titles)=}")
+            logging.info(f"Получено обновление {site.name} {latest_updates=!s} {len(titles)=}")
         except Exception as e:
             logging.exception(f"Обновление {site.name} не получено")
             logging.exception(e)

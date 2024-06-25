@@ -1,5 +1,3 @@
-from asyncio import Task
-
 from aiogram import Router
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
@@ -8,7 +6,7 @@ from aiogram.types import Message
 
 from api.enum import MangaLib, RanobeLib
 from api.enum.lib import AnimeLib
-from handlers.del_msg import delete_messages
+from handlers import delete_messages
 
 router = Router()
 SUPPORTED = (f"<a href='{MangaLib.url}'>MangaLib</a>, "
@@ -48,10 +46,4 @@ async def cmd_cancel(message: Message, state: FSMContext):
     if not state_data:
         await message.answer("🤷‍♂️ Никаких действий не было")
     else:
-        if "timer" in state_data:
-            old_timer: Task = state_data["timer"]
-            old_timer.cancel()
-
-        await state.clear()
-        await message.answer("Успешно отменено!")
-
+        await message.answer("✅ Успешно отменено!")

@@ -1,30 +1,35 @@
 import asyncio
-from logging import Formatter, getLogger, INFO
+from logging import Formatter, getLogger, INFO, StreamHandler
 from logging.handlers import TimedRotatingFileHandler
 from os import getenv
 
 from aiogram import Bot, Dispatcher
-from aiogram.fsm.context import FSMContext
-from aiogram.types import BotCommand, ErrorEvent
+from aiogram.types import BotCommand, ErrorEvent, User
 
 from api.enum import SITES
 from bot_utils.updater import check_update
 from handlers import *
-from handlers.del_msg import delete_messages
 
-handler = TimedRotatingFileHandler(
+
+DEBUG_MODE = False
+
+logger = getLogger()
+formatter = Formatter("%(asctime)s %(levelname)s %(name)s [%(filename)s: %(lineno)d] %(message)s")
+handler_file = TimedRotatingFileHandler(
     filename="bot.log",
     when="midnight",
     interval=1,
     backupCount=3,
     encoding="utf-8"
 )
-handler.setFormatter(
-    Formatter("%(asctime)s %(levelname)s %(name)s [%(filename)s: %(lineno)d] %(message)s")
-)
-logger = getLogger()
-logger.addHandler(handler)
+handler_file.setFormatter(formatter)
+logger.addHandler(handler_file)
 logger.setLevel(INFO)
+
+if DEBUG_MODE:
+    handler_console = StreamHandler()
+    handler_console.setFormatter(formatter)
+    logger.addHandler(handler_console)
 
 
 bot = Bot(token=getenv("TOKEN"))
@@ -43,9 +48,9 @@ async def set_commands():
 
 @dp.error()
 @delete_messages
-async def error_message(event: ErrorEvent, state: FSMContext):
-    await state.clear()
-    await event.update.message.answer(
+async def error_message(event: ErrorEvent, event_from_user: User):
+    await bot.send_message(
+        event_from_user.id,
         "Внутрення ошибка :(\n"
         "Обратитесь к разработчику, если ошибка возникает слишком часто"
     )

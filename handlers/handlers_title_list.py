@@ -120,7 +120,7 @@ async def keyboard(page: int, user_id: int) -> InlineKeyboardMarkup:
                 callback_data=NavigationData(page=page-1).pack()
             )
         )
-    if page < last_page:
+    if page < last_page and on_page * (page + 1) != len(publications):
         navigation.append(
             InlineKeyboardButton(
                 text="Вперёд ➡️",
