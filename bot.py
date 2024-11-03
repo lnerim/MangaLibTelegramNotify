@@ -4,6 +4,7 @@ from logging.handlers import TimedRotatingFileHandler
 from os import getenv
 
 from aiogram import Bot, Dispatcher
+from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.types import BotCommand, ErrorEvent, User
 
 from api.enum import SITES
@@ -33,7 +34,8 @@ if DEBUG_MODE:
 
 
 bot = Bot(token=getenv("TOKEN"))
-dp = Dispatcher()
+storage = RedisStorage.from_url(getenv("REDIS"))
+dp = Dispatcher(storage=storage)
 
 
 async def set_commands():
