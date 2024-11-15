@@ -15,7 +15,7 @@ class Lib:
 
 MangaLib = Lib(
     site_id="1",
-    url="https://test-front.mangalib.me/",
+    url="https://mangalib.me/",
     name="MangaLib",
     api="https://api.lib.social/api/",
     model="manga",
