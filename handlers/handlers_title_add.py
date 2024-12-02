@@ -10,7 +10,7 @@ from aiogram.utils.media_group import MediaGroupBuilder
 from api.enum import SITES, TitleInfo
 from api.enum.callback import SearchTitle, TitleData
 from api.requests import search, more_info
-from bot_utils import db
+from bot_utils import db_old as db
 from bot_utils.states import Search
 from handlers import delete_messages
 

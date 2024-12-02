@@ -5,7 +5,7 @@ from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, C
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from api.enum.callback import NavigationData, ItemData, ItemDataDelete
-from bot_utils import db
+from bot_utils import db_old as db
 
 router = Router()
 

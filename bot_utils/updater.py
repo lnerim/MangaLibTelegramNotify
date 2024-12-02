@@ -6,7 +6,7 @@ from aiogram import Bot
 
 from api.enum import Lib
 from api.requests import get_latest_updates
-from bot_utils import db
+from bot_utils import db_old as db
 
 
 async def check_update(site: Lib, bot: Bot):

@@ -13,7 +13,7 @@ from bot_utils.updater import check_update
 from handlers import *
 
 
-DEBUG_MODE = False
+DEBUG_MODE = True
 
 logger = getLogger()
 formatter = Formatter("%(asctime)s %(levelname)s %(name)s [%(filename)s: %(lineno)d] %(message)s")

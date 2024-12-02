@@ -8,6 +8,7 @@ from api.enum.lib import Lib, SITES
 
 
 async def _get_from_api(site: Lib, url: str):
+    # TODO Обновить User-Agent
     async with AsyncClient(http2=True) as client:
         data: Response = await client.get(
             url=url,
@@ -37,6 +38,9 @@ async def get_latest_updates(site: Lib, last_update: datetime) -> tuple[datetime
         await sleep(0.5)
         updates += await _get_from_api(site, site.latest_updates + f"?page={page}")
         page += 1
+
+    # TODO Написать логику для проверки, есть ли тайтл в BDMedia
+
 
     titles = map(Title, updates)
     filtered_titles: tuple[Title, ...] = tuple(filter(lambda t: t.last_item_at > last_update, titles))
