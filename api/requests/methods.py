@@ -8,14 +8,13 @@ from api.enum.lib import Lib, SITES
 
 
 async def _get_from_api(site: Lib, url: str):
-    # TODO Обновить User-Agent
     async with AsyncClient(http2=True) as client:
         data: Response = await client.get(
             url=url,
             headers={
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                               "AppleWebKit/537.36 (KHTML, like Gecko) "
-                              "Chrome/119.0.0.0 Safari/537.36",
+                              "Chrome/131.0.0.0 Safari/537.36",
                 "Accept": "*/*",
                 "Accept-Encoding": "utf-8",
                 "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
