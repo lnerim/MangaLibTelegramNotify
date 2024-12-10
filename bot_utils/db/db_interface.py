@@ -12,8 +12,10 @@ class DBInterface:
         self.engine = create_async_engine(f"sqlite+aiosqlite:///{name_db}", echo=True)
         self.async_session = async_sessionmaker(bind=self.engine, expire_on_commit=False)
 
-    async def check_publication_in_db(self, publication_ids: list[int]) -> list[int]:
-        stmt = select(DBMedia.media_id).where(DBMedia.media_id.in_(publication_ids))
+    async def check_publication_in_db(self, publication_ids: list[int], site_id: int) -> list[int]:
+        stmt = select(DBMedia.media_id).where(
+            DBMedia.media_id.in_(publication_ids), site_id == DBMedia.site_id
+        )
         async with self.async_session() as session:
             result = await session.execute(stmt)
             existing_ids = result.scalars().all()

@@ -39,6 +39,7 @@ async def get_latest_updates(site: Lib, last_update: datetime) -> tuple[datetime
         page += 1
 
     # TODO Написать логику для проверки, есть ли тайтл в BDMedia
+    # updates_ids = [int(t["id"]) for t in updates]
 
 
     titles = map(Title, updates)
