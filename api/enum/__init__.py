@@ -2,6 +2,7 @@ from .lib import Lib, MangaLib, RanobeLib, AnimeLib, SITES
 from .media_item import MediaItem
 from .title import Title
 from .title_info import TitleInfo
+from .title_search import TitleSearch
 
 __all__ = (
     "Lib",
@@ -11,5 +12,6 @@ __all__ = (
     "Title",
     "MediaItem",
     "TitleInfo",
+    "TitleSearch",
     "SITES"
 )

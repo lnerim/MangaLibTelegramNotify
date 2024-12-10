@@ -25,7 +25,7 @@ async def check_update(site: Lib, bot: Bot):
             continue
 
         for title in titles:
-            users: list[DBUpdates] = db_new.users_by_publication(title.title_id, title.site)
+            users: list[DBUpdates] = await db_new.users_by_publication(title.title_id, title.site)
             for user in users:
                 try:
                     await bot.send_photo(

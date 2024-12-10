@@ -101,7 +101,7 @@ async def search_input(message: Message, state: FSMContext, to_delete: list):
 async def choose_title(callback: CallbackQuery, state: FSMContext, bot: Bot, to_delete: list):
     title_data: TitleData = TitleData.unpack(callback.data)
     state_data = await state.get_data()
-    slug = state_data["slugs"][int(title_data.title_id)]
+    slug = state_data["slugs"][title_data.title_id]
 
     info_msg = await bot.send_message(callback.from_user.id, "Загрузка информации...")
     try:
@@ -154,8 +154,8 @@ async def add_title_handler(callback: CallbackQuery, state: FSMContext, bot: Bot
 async def add_title(callback: CallbackQuery, state: FSMContext, bot: Bot):
     title_data: TitleData = TitleData.unpack(callback.data)
     name_data = await state.get_data()
-    name = name_data["names"][int(title_data.title_id)]
+    name = name_data["names"][title_data.title_id]
 
-    db_new.publication_add(callback.from_user.id, title_data.title_id, title_data.site_id, name)
+    await db_new.publication_add(callback.from_user.id, int(title_data.title_id), title_data.site_id, name)
 
     await bot.send_message(callback.from_user.id, "✅ Успешно добавлено!\nСписок подписок /list")

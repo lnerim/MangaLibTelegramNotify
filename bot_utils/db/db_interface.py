@@ -2,7 +2,7 @@ from sqlalchemy import update, select
 from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
-from db_init import DBMedia, DBUpdates
+from .db_init import DBMedia, DBUpdates
 
 
 class DBInterface:

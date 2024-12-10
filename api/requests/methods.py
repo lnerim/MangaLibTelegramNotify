@@ -5,6 +5,7 @@ from httpx import AsyncClient, Response
 
 from api.enum import Title, TitleInfo
 from api.enum.lib import Lib, SITES
+from api.enum.title_search import TitleSearch
 
 
 async def _get_from_api(site: Lib, url: str):
@@ -49,10 +50,10 @@ async def get_latest_updates(site: Lib, last_update: datetime) -> tuple[datetime
     return new_update, filtered_titles
 
 
-async def search(site_id: str, name: str) -> tuple[Title, ...]:
+async def search(site_id: str, name: str) -> tuple[TitleSearch, ...]:
     site: Lib = SITES[site_id]
     data = await _get_from_api(site, site.search + name)
-    titles: tuple[Title, ...] = tuple(map(Title.from_json, data))
+    titles: tuple[TitleSearch, ...] = tuple(map(TitleSearch.from_json, data))
     return titles
 
 
