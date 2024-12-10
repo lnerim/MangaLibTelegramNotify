@@ -1,10 +1,8 @@
 from sqlalchemy import update, select
 from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-from sqlalchemy.util import generic_repr
 
 from db_init import DBMedia, DBUpdates
-import asyncio
 
 
 class DBInterface:
@@ -21,7 +19,6 @@ class DBInterface:
             existing_ids = result.scalars().all()
             return list(existing_ids)
 
-    # FIXME: Возможно изменились входные данные
     async def publication_add(self, user_id: int, media_id: int, site_id: int, name: str) -> None:
         stmt_media = insert(DBMedia).values(
             media_id=media_id, site_id=site_id,
@@ -41,7 +38,6 @@ class DBInterface:
             await session.execute(stmt_upd)
             await session.commit()
 
-    # FIXME: Возможно изменились входные данные
     async def publication_delete(self, user_id: int, media_id: int, site_id: int) -> None:
         stmt = update(DBUpdates).where(
             user_id == DBUpdates.user_id, media_id == DBUpdates.media_id, site_id == DBUpdates.site_id
@@ -51,7 +47,6 @@ class DBInterface:
             await session.execute(stmt)
             await session.commit()
 
-    # FIXME: Возможно изменились входные данные
     async def users_by_publication(self, media_id: int, site_id: int) -> list[DBUpdates]:
         stmt = select(DBUpdates).where(
             media_id == DBUpdates.media_id, site_id == DBUpdates.site_id,
@@ -61,7 +56,6 @@ class DBInterface:
             result = await session.execute(stmt)
             return list(result.scalars().all())
 
-    # FIXME: Возможно изменились входные данные
     async def publications_by_user(self, user_id: int) -> list[DBUpdates]:
         stmt = select(DBUpdates).where(
             user_id == DBUpdates.user_id, True == DBUpdates.update_enabled
@@ -70,7 +64,6 @@ class DBInterface:
             result = await session.execute(stmt)
             return list(result.scalars().all())
 
-    # FIXME: Возможно изменились входные данные
     async def publication_get(self, media_id: int, site_id: int) -> DBMedia | None:
         stmt = select(DBMedia).where(
             media_id == DBMedia.media_id, site_id == DBMedia.site_id
@@ -81,15 +74,3 @@ class DBInterface:
 
 
 db_new = DBInterface("db.sqlite")
-
-async def main():
-    # print(generic_repr(await db_new.publication_add(1158, 1156, 52, "test")))
-    print(generic_repr(await db_new.publication_delete(1158, 1156, 52)))
-    result = await db_new.users_by_publication(1156, 52)
-    print(result)
-    print(len(result))
-    print()
-
-
-if __name__ == "__main__":
-    asyncio.run(main())

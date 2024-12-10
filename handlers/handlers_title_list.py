@@ -5,7 +5,8 @@ from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, C
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from api.enum.callback import NavigationData, ItemData, ItemDataDelete
-from bot_utils import db_old as db
+from bot_utils import db_old as db, db_new
+from bot_utils.db import DBUpdates
 
 router = Router()
 
@@ -49,13 +50,15 @@ async def callback_item(callback: CallbackQuery):
     builder.add(
         InlineKeyboardButton(
             text="🗑 Да",
-            callback_data=ItemDataDelete(key=data.key, page=data.page, delete=True).pack()
+            callback_data=ItemDataDelete(item_id=data.item_id, site_id=data.site_id,
+                                         page=data.page, delete=True).pack()
         )
     )
     builder.add(
         InlineKeyboardButton(
             text="💾 Нет",
-            callback_data=ItemDataDelete(key=data.key, page=data.page, delete=False).pack()
+            callback_data=ItemDataDelete(item_id=data.item_id, site_id=data.site_id,
+                                         page=data.page, delete=False).pack()
         )
     )
 
@@ -70,7 +73,7 @@ async def callback_nav(callback: CallbackQuery, bot: Bot):
     data: ItemDataDelete = ItemDataDelete.unpack(callback.data)
 
     if data.delete:
-        db.publication_delete(data.key)
+        db_new.publication_delete(callback.from_user.id, data.item_id, data.site_id)
         await callback.answer("Тайтл успешно удалён!")
     else:
         await callback.answer("Тайтл не удалён")
@@ -96,18 +99,19 @@ async def callback_nav(callback: CallbackQuery, bot: Bot):
 async def keyboard(page: int, user_id: int) -> InlineKeyboardMarkup:
     on_page = 10
     builder = InlineKeyboardBuilder()
-    publications = db.publications_by_user(user_id)
+    publications: list[DBUpdates] = db_new.publications_by_user(user_id)
 
     current_item = page * on_page
-    current_publications = publications[current_item:current_item + on_page]
+    current_publications: list[DBUpdates] = publications[current_item:current_item + on_page]
     if not current_publications:
         raise IndexError("Пустой список публикаций")
 
-    for key, name in current_publications:
+    for p in current_publications:
+        media = db_new.publication_get(p.media_id, p.site_id)
         builder.row(
             InlineKeyboardButton(
-                text=name,
-                callback_data=ItemData(key=key, page=page).pack()
+                text=media.name,
+                callback_data=ItemData(item_id=p.media_id, site_id=p.site_id, page=page).pack()
             )
         )
 

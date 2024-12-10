@@ -42,7 +42,7 @@ async def get_latest_updates(site: Lib, last_update: datetime) -> tuple[datetime
     # updates_ids = [int(t["id"]) for t in updates]
 
 
-    titles = map(Title, updates)
+    titles = map(Title.from_json, updates)
     filtered_titles: tuple[Title, ...] = tuple(filter(lambda t: t.last_item_at > last_update, titles))
     new_update: datetime = filtered_titles[0].last_item_at if filtered_titles else last_update
 
@@ -52,7 +52,7 @@ async def get_latest_updates(site: Lib, last_update: datetime) -> tuple[datetime
 async def search(site_id: str, name: str) -> tuple[Title, ...]:
     site: Lib = SITES[site_id]
     data = await _get_from_api(site, site.search + name)
-    titles: tuple[Title, ...] = tuple(map(Title, data))
+    titles: tuple[Title, ...] = tuple(map(Title.from_json, data))
     return titles
 
 

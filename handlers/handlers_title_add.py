@@ -10,7 +10,7 @@ from aiogram.utils.media_group import MediaGroupBuilder
 from api.enum import SITES, TitleInfo
 from api.enum.callback import SearchTitle, TitleData
 from api.requests import search, more_info
-from bot_utils import db_old as db
+from bot_utils import db_new
 from bot_utils.states import Search
 from handlers import delete_messages
 
@@ -156,6 +156,6 @@ async def add_title(callback: CallbackQuery, state: FSMContext, bot: Bot):
     name_data = await state.get_data()
     name = name_data["names"][int(title_data.title_id)]
 
-    db.publication_add(title_data.title_id, callback.from_user.id, title_data.site_id, name)
+    db_new.publication_add(callback.from_user.id, title_data.title_id, title_data.site_id, name)
 
     await bot.send_message(callback.from_user.id, "✅ Успешно добавлено!\nСписок подписок /list")
