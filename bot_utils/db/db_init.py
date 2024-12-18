@@ -32,13 +32,8 @@ class DBMedia(Base):
 
     media_name = Column(String, nullable=False)
 
-    # Для манги и ранобэ
-    last_read_chapter = Column(Float, nullable=False, default=0.0)
-    last_read_volume = Column(Float, nullable=False, default=0.0)
-
-    # Для аниме
-    last_read_season = Column(Float, nullable=False, default=0.0)
-    last_read_episode = Column(Float, nullable=False, default=0.0)
+    major = Column(Float, nullable=False, default=0.0)
+    minor = Column(Float, nullable=False, default=0.0)
 
 
 class DBUpdates(Base):

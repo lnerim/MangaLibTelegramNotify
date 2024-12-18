@@ -6,6 +6,7 @@ from httpx import AsyncClient, Response
 from api.enum import Title, TitleInfo
 from api.enum.lib import Lib, SITES
 from api.enum.title_search import TitleSearch
+from bot_utils import db_new
 
 
 async def _get_from_api(site: Lib, url: str):
@@ -39,11 +40,16 @@ async def get_latest_updates(site: Lib, last_update: datetime) -> tuple[datetime
         updates += await _get_from_api(site, site.latest_updates + f"?page={page}")
         page += 1
 
-    # TODO Написать логику для проверки, есть ли тайтл в BDMedia
-    # updates_ids = [int(t["id"]) for t in updates]
+    updates_ids = [int(t["id"]) for t in updates]
+    updates_ids = await db_new.check_publication_in_db(updates_ids, int(site.site_id))
 
+    titles = list()
+    for t in updates:
+        if int(t["id"]) in updates_ids:
+            titles.append(
+                Title.from_json(t, last_update)
+            )
 
-    titles = map(Title.from_json, updates)
     filtered_titles: tuple[Title, ...] = tuple(filter(lambda t: t.last_item_at > last_update, titles))
     new_update: datetime = filtered_titles[0].last_item_at if filtered_titles else last_update
 

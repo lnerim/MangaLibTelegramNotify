@@ -4,7 +4,7 @@ from aiogram import Router, Bot
 from aiogram.enums import ParseMode
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, URLInputFile
 from aiogram.utils.media_group import MediaGroupBuilder
 
 from api.enum import SITES, TitleInfo
@@ -76,7 +76,7 @@ async def search_input(message: Message, state: FSMContext, to_delete: list):
     for num, title in enumerate(search_data[:10]):
         slugs[title.title_id] = title.slug
         names[title.title_id] = title.rus_name or title.name
-        album.add_photo(media=title.picture)
+        album.add_photo(media=URLInputFile(title.picture))
         keyboard_input.append([
             InlineKeyboardButton(
                 text=title.rus_name or title.name,
@@ -129,7 +129,7 @@ async def choose_title(callback: CallbackQuery, state: FSMContext, bot: Bot, to_
 
     d_msg = await bot.send_photo(
         chat_id=callback.from_user.id,
-        photo=t.picture,
+        photo=URLInputFile(t.picture),
         caption=caption + summary + f"\n\nОтменить: /cancel",  # cancel len = 19
         parse_mode=ParseMode.HTML,
         reply_markup=InlineKeyboardMarkup(

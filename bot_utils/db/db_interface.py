@@ -72,5 +72,15 @@ class DBInterface:
             result = await session.execute(stmt)
             return result.scalars().first()
 
+    async def publication_update(self, media_id: int, site_id: int,
+                                 major: float = 0.0, minor: float = 0.0):
+        stmt = update(DBMedia).where(
+            media_id == DBMedia.media_id, site_id == DBMedia.site_id
+        ).values(major=major, minor=minor)
+
+        async with self.async_session() as session:
+            await session.execute(stmt)
+            await session.commit()
+
 
 db_new = DBInterface("db.sqlite")

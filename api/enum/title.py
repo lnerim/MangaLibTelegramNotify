@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass
-from datetime import datetime, date
+from datetime import datetime
 
 from .media_item import MediaItem
 
@@ -17,12 +17,12 @@ class Title:
     slug_url: str
     model: str
     picture: str
-    last_item_at: date
+    last_item_at: datetime
 
-    latest_items: tuple
+    latest_items: tuple[MediaItem, ...]
 
     @staticmethod
-    def from_json(data: dict) -> "Title":
+    def from_json(data: dict, latest_updates: datetime) -> "Title":
         logging.debug(f"TitleInfo: {data=}")
 
         title_id = data["id"]
@@ -38,7 +38,14 @@ class Title:
         last_item_at = datetime.fromisoformat(data["last_item_at"])
 
         items = data["metadata"]["latest_items"]["items"]
-        latest_items = tuple(map(MediaItem, items))
+
+        latest_items: tuple[MediaItem, ...] = tuple(map(MediaItem.from_json, items))
+        latest_items = tuple(
+            filter(
+                lambda x: x.created_at > latest_updates,
+                latest_items
+            )
+        )
 
         return Title(title_id, site, site_id, name, rus_name, eng_name, slug,
                      slug_url, model, picture, last_item_at, latest_items)
