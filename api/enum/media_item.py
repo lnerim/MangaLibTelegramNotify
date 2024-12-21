@@ -71,14 +71,18 @@ class MediaItem:
         if not isinstance(other, DBMedia):
             raise TypeError(f"DBMedia expected, got {type(other)} instead")
 
-        # True - со звуком
-        # False - без звука
+        # True - без звука
+        # False - со звуком
         # other - значение из БД
         if other.major > self.major:
-            return False
-        elif other.major < self.major:
+            logging.warning(f"% {self.name} 1 сравнение")
             return True
-        elif other.minor >= self.minor:
+        elif other.major < self.major:
+            logging.warning(f"% {self.name} 2 сравнение")
             return False
+        elif other.minor >= self.minor:
+            logging.warning(f"% {self.name} 3 сравнение")
+            return True
 
-        return True
+        logging.warning(f"% {self.name} 4 сравнение")
+        return False
