@@ -51,6 +51,7 @@ class Title:
         if not latest_items:
             logging.warning(f"===Пустой Title===")
             logging.warning(f"{data=}")
+            logging.warning(f"{latest_updates=}")
             logging.warning(f"{latest_items=}")
 
         return Title(title_id, site, site_id, name, rus_name, eng_name, slug,
