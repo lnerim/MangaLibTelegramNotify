@@ -35,11 +35,14 @@ class Title:
         slug_url = data["slug_url"]
         model = data["model"]
         picture = data["cover"]["default"]
-        last_item_at = datetime.fromisoformat(data["last_item_at"])
+        # С сервера приходят неверные данные, возможно нет информации об обновлении
+        # last_item_at = datetime.fromisoformat(data["last_item_at"])
 
         items = data["metadata"]["latest_items"]["items"]
 
         latest_items: tuple[MediaItem, ...] = tuple(map(MediaItem.from_json, items))
+        last_item_at = max(latest_items, key=lambda x: x.created_at).created_at
+
         latest_items = tuple(
             filter(
                 lambda x: x.created_at > latest_updates,

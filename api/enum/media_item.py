@@ -26,7 +26,6 @@ class MediaItem:
 
         item_id = data["id"]
         model = data["model"]
-        created_at = datetime.fromisoformat(data["created_at"])
 
         name = data["name"] or None
 
@@ -34,9 +33,13 @@ class MediaItem:
             case "chapter":
                 major = float(data["volume"])
                 minor = float(data["number"])
+                created_at = datetime.fromisoformat(data["created_at"])
             case "episodes":
                 major = float(data["season"])
                 minor = float(data["number"])
+                created_at = datetime.fromisoformat(data["created_at"])
+                for player in data["players"]:
+                    created_at = max(created_at, datetime.fromisoformat(player["created_at"]))
             case _:
                 logging.error(f"MediaItem: {data=}")
                 raise Exception(f"Неизвестная модель: '{model}'")
