@@ -32,6 +32,15 @@ async def check_update(site: Lib, bot: Bot):
             for user in users:
                 item: MediaItem
 
+                # FIXME Почему-то иногда бывает пустым, хотя последнее обновление должно отфильтровываться
+                #  и пустым оно просто не может быть, так как один элемент всегда должен быть равен хоть одному
+
+                # TODO Временный фикс
+                if not title.latest_items:
+                    logging.warning("===Пустое обновление===")
+                    logging.warning(f"{title.title_id=}, {title.slug=}, {title.latest_items=}")
+                    logging.warning(f"{title=}")
+                    continue
                 disable_notification = title.latest_items[0] % db_title
 
                 for item in title.latest_items:
