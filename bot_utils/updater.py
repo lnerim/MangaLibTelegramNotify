@@ -51,7 +51,7 @@ async def check_update(site: Lib, bot: Bot):
                             # TODO Удалить
                             caption=f"Вышло обновление в произведении: "
                                     f"<a href='{site.url}{title.url}'>{title.rus_name or title.name}</a>"
-                                    f"\n\n{item.get_str}" + "\nБез шума" if disable_notification else "",
+                                    f"\n\n{item.get_str}" + ("\nБез шума" if disable_notification else "\nС шумом"),
                             parse_mode="HTML",
                             disable_notification=disable_notification
                         )
