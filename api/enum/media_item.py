@@ -20,6 +20,8 @@ class MediaItem:
 
     created_at: datetime
 
+    additional_data: str
+
     @staticmethod
     def from_json(data: dict) -> "MediaItem":
         logging.debug(f"MediaItem: {data=}")
@@ -29,6 +31,8 @@ class MediaItem:
 
         name = data["name"] or None
 
+        additional_data = "\n\n"
+
         match model:
             case "chapter":
                 major = float(data["volume"])
@@ -37,14 +41,30 @@ class MediaItem:
             case "episodes":
                 major = float(data["season"])
                 minor = float(data["number"])
-                created_at = datetime.fromisoformat(data["created_at"])
-                for player in data["players"]:
-                    created_at = max(created_at, datetime.fromisoformat(player["created_at"]))
+
+                max_created_at_player = max(
+                    data["players"],
+                    key=lambda x: datetime.fromisoformat(x["created_at"])
+                )
+                created_at = datetime.fromisoformat(max_created_at_player["created_at"])
+
+                players = sorted(
+                    data["players"],
+                    key=lambda x: int(x["id"]),
+                    reverse=True
+                )
+
+                for n, player in enumerate(players[:5]):
+                    additional_data += f"{n}. <a href='https://anilib.me/ru/anime/"
+                    additional_data += f"{player["slug_url"]}/watch?episode={player["id"]}>"
+                    additional_data += f"Ссылка на {player["player"]} "
+                    additional_data += f"{player["translation_type"]["name"]} "
+                    additional_data += f"{player["name"]}</a>\n"
             case _:
                 logging.error(f"MediaItem: {data=}")
                 raise Exception(f"Неизвестная модель: '{model}'")
 
-        return MediaItem(item_id, name, model, major, minor, created_at)
+        return MediaItem(item_id, name, model, major, minor, created_at, additional_data)
 
     @property
     def get_str(self):
@@ -63,7 +83,16 @@ class MediaItem:
         if self.name:
             result_str += f"\n{self.name}\n"
 
+        result_str += self.additional_data
+
         return result_str
+
+    def __format__(self, format_spec) -> str:
+        match format_spec:
+            case "info":
+                return self.get_str
+            case _:
+                return super().__format__(format_spec)
 
     def __mod__(self, other: DBMedia) -> bool:
         # TODO Проверить корректность, либо протестировать
@@ -74,15 +103,16 @@ class MediaItem:
         # True - без звука
         # False - со звуком
         # other - значение из БД
+        logging.info(f"{other.major=} {other.minor=}, {self.major=} {self.minor=}")
         if other.major > self.major:
-            logging.warning(f"% {self.name} 1 сравнение")
+            logging.info(f"{other.major > self.major=}")
             return True
         elif other.major < self.major:
-            logging.warning(f"% {self.name} 2 сравнение")
+            logging.info(f"{other.major < self.major=}")
             return False
         elif other.minor >= self.minor:
-            logging.warning(f"% {self.name} 3 сравнение")
+            logging.info(f"{other.major >= self.major=}")
             return True
 
-        logging.warning(f"% {self.name} 4 сравнение")
+        logging.info(f"{False}")
         return False

@@ -16,6 +16,7 @@ async def check_update(site: Lib, bot: Bot):
     await asyncio.sleep(int(site.site_id) * 10)
 
     latest_updates: datetime = datetime.now(UTC)
+    logging.info(f"Начало обновления {site.name} {latest_updates=!s}")
     while True:
         try:
             latest_updates, titles = await get_latest_updates(site, latest_updates)
@@ -32,15 +33,6 @@ async def check_update(site: Lib, bot: Bot):
             for user in users:
                 item: MediaItem
 
-                # FIXME Почему-то иногда бывает пустым, хотя последнее обновление должно отфильтровываться
-                #  и пустым оно просто не может быть, так как один элемент всегда должен быть равен хоть одному
-
-                # TODO Временный фикс
-                if not title.latest_items:
-                    logging.warning("===Пустое обновление===")
-                    logging.warning(f"{title.title_id=}, {title.slug=}, {title.latest_items=}")
-                    logging.warning(f"{title=}")
-                    continue
                 disable_notification = title.latest_items[0] % db_title
 
                 for item in title.latest_items:
@@ -51,7 +43,7 @@ async def check_update(site: Lib, bot: Bot):
                             # TODO Удалить
                             caption=f"Вышло обновление в произведении: "
                                     f"<a href='{site.url}{title.url}'>{title.rus_name or title.name}</a>"
-                                    f"\n\n{item.get_str}" + ("\nБез шума" if disable_notification else "\nС шумом"),
+                                    f"\n\n{item:info}" + ("\nБез шума" if disable_notification else "\nС шумом"),
                             parse_mode="HTML",
                             disable_notification=disable_notification
                         )
