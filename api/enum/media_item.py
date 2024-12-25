@@ -54,12 +54,12 @@ class MediaItem:
                     reverse=True
                 )
 
-                for n, player in enumerate(players[:5]):
-                    additional_data += f"{n}. <a href='https://anilib.me/ru/anime/"
-                    additional_data += f"{player["slug_url"]}/watch?episode={player["id"]}>"
-                    additional_data += f"Ссылка на {player["player"]} "
-                    additional_data += f"{player["translation_type"]["name"]} "
-                    additional_data += f"{player["name"]}</a>\n"
+                for n, player in enumerate(players[:5], start=1):
+                    logging.info(f"{player=}")
+                    additional_data += f"{n}. "
+                    additional_data += f"{player["player"]} "
+                    additional_data += f"{player["translation_type"]["label"]} "
+                    additional_data += f"{player["team"]["name"]}\n"
             case _:
                 logging.error(f"MediaItem: {data=}")
                 raise Exception(f"Неизвестная модель: '{model}'")

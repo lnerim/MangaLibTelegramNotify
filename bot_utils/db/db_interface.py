@@ -7,7 +7,7 @@ from .db_init import DBMedia, DBUpdates
 
 class DBInterface:
     def __init__(self, name_db: str = "db.sqlite"):
-        self.engine = create_async_engine(f"sqlite+aiosqlite:///{name_db}", echo=True)
+        self.engine = create_async_engine(f"sqlite+aiosqlite:///{name_db}", echo=False)
         self.async_session = async_sessionmaker(bind=self.engine, expire_on_commit=False)
 
     async def check_publication_in_db(self, publication_ids: list[int], site_id: int) -> list[int]:

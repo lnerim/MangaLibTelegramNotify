@@ -4,6 +4,7 @@ import logging
 from asyncio import TaskGroup, Task
 
 from aiogram import Bot
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, User
 
@@ -74,9 +75,12 @@ async def timer_set(state: FSMContext, bot: Bot, user_id: int | str) -> None:
 
 
 async def messages_del(state_data: dict, user_id: int | str, bot: Bot) -> None:
-    if "del_msg" in state_data:
-        # state_data["del_msg"]: list[int]
-        await bot.delete_messages(user_id, state_data["del_msg"])
+    try:
+        if "del_msg" in state_data:
+            # state_data["del_msg"]: list[int]
+            await bot.delete_messages(user_id, state_data["del_msg"])
+    except TelegramBadRequest:
+        ...
 
 
 def get_new_kwargs(func: callable, kwargs: dict) -> dict:
