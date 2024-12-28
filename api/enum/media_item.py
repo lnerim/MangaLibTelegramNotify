@@ -55,7 +55,7 @@ class MediaItem:
                 )
 
                 for n, player in enumerate(players[:5], start=1):
-                    logging.info(f"{player=}")
+                    # logging.info(f"{player=}")
                     additional_data += f"{n}. "
                     additional_data += f"{player["player"]} "
                     additional_data += f"{player["translation_type"]["label"]} "

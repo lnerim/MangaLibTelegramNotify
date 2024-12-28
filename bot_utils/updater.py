@@ -40,10 +40,10 @@ async def check_update(site: Lib, bot: Bot):
                         await bot.send_photo(
                             chat_id=user.user_id,
                             photo=URLInputFile(title.picture),
-                            # TODO Удалить
-                            caption=f"Вышло обновление в произведении: "
-                                    f"<a href='{site.url}{title.url}'>{title.rus_name or title.name}</a>"
-                                    f"\n\n{item:info}" + ("\nБез шума" if disable_notification else "\nС шумом"),
+                            caption=f"{"⭐️" if disable_notification else "🌟"} "
+                                    f"Вышло обновление в произведении: "
+                                    f"<a href='{site.url}{title.url}'>{title.rus_name or title.name}</a>\n\n"
+                                    f"{item:info}",
                             parse_mode="HTML",
                             disable_notification=disable_notification
                         )
@@ -54,7 +54,6 @@ async def check_update(site: Lib, bot: Bot):
                         await asyncio.sleep(30)
                         continue
 
-            await db_new.publication_update(title.title_id, title.site_id,
-                                            title.latest_items[0].major, title.latest_items[0].minor)
+            await db_new.publication_update(title, db_title)
 
         await asyncio.sleep(60 * 10)

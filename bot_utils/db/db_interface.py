@@ -72,11 +72,16 @@ class DBInterface:
             result = await session.execute(stmt)
             return result.scalars().first()
 
-    async def publication_update(self, media_id: int, site_id: int,
-                                 major: float = 0.0, minor: float = 0.0):
+    # FIXME Починить тип title
+    async def publication_update(self, title, db_title: DBMedia) -> None:
+        # True (без звука) - обновление не нужно
+        # False (со звуком) - обновление нужно
+        if title.latest_items[0] % db_title:
+            return
+
         stmt = update(DBMedia).where(
-            media_id == DBMedia.media_id, site_id == DBMedia.site_id
-        ).values(major=major, minor=minor)
+            title.title_id == DBMedia.media_id, title.site_id == DBMedia.site_id
+        ).values(major=title.latest_items[0].major, minor=title.latest_items[0].minor)
 
         async with self.async_session() as session:
             await session.execute(stmt)
