@@ -57,7 +57,7 @@ async def get_latest_updates(site: Lib, last_update: datetime) -> tuple[datetime
             )
 
     filtered_titles: tuple[Title, ...] = tuple(filter(lambda t: t.last_item_at > last_update, titles))
-    new_update: datetime = filtered_titles[0].last_item_at if filtered_titles else last_update
+    new_update: datetime = datetime.fromisoformat(updates[0]["last_item_at"])
 
     return new_update, filtered_titles
 
