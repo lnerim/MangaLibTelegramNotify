@@ -35,8 +35,6 @@ class Title:
         slug_url = data["slug_url"]
         model = data["model"]
         picture = data["cover"]["default"]
-        # С сервера приходят неверные данные, возможно нет информации об обновлении
-        # last_item_at = datetime.fromisoformat(data["last_item_at"])
 
         items = data["metadata"]["latest_items"]["items"]
 

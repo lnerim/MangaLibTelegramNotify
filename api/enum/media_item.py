@@ -95,8 +95,6 @@ class MediaItem:
                 return super().__format__(format_spec)
 
     def __mod__(self, other: DBMedia) -> bool:
-        # TODO Проверить корректность, либо протестировать
-        #  Да и mod поменять стоит, скорее всего
         if not isinstance(other, DBMedia):
             raise TypeError(f"DBMedia expected, got {type(other)} instead")
 

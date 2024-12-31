@@ -13,7 +13,7 @@ class TitleInfo:
     slug_url: str
     model: str
     picture: str
-    
+
     ageRestriction: str
     authors: tuple[str, ...]
     genres: tuple[str, ...]

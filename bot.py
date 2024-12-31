@@ -12,8 +12,7 @@ from api.enum import SITES
 from bot_utils.updater import check_update
 from handlers import *
 
-
-DEBUG_MODE = True
+DEBUG_MODE = False
 
 logger = getLogger()
 formatter = Formatter("%(asctime)s %(levelname)s %(name)s [%(filename)s: %(lineno)d] %(message)s")
@@ -32,7 +31,6 @@ if DEBUG_MODE:
     handler_console = StreamHandler()
     handler_console.setFormatter(formatter)
     logger.addHandler(handler_console)
-
 
 bot = Bot(token=getenv("TOKEN"))
 redis = Redis.from_url(getenv("REDIS"))

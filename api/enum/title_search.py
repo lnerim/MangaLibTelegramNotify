@@ -14,7 +14,6 @@ class TitleSearch:
     slug_url: str
     picture: str
 
-
     @staticmethod
     def from_json(data: dict) -> "TitleSearch":
         logging.debug(f"TitleSearch: {data=}")
@@ -28,7 +27,6 @@ class TitleSearch:
         slug = data["slug"]
         slug_url = data["slug_url"]
         picture = data["cover"]["default"]
-
 
         return TitleSearch(title_id, site, site_id, name, rus_name,
                            eng_name, slug, slug_url, picture)

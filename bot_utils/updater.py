@@ -12,7 +12,6 @@ from bot_utils.db import DBUpdates, DBMedia
 
 
 async def check_update(site: Lib, bot: Bot):
-    # TODO Переделать в другом виде, так некрасиво
     await asyncio.sleep(int(site.site_id) * 10)
 
     latest_updates: datetime = datetime.now(UTC)
@@ -54,6 +53,12 @@ async def check_update(site: Lib, bot: Bot):
                         await asyncio.sleep(30)
                         continue
 
-            await db_new.publication_update(title, db_title)
+            # True (без звука) - обновление не нужно
+            # False (со звуком) - обновление нужно
+            if not title.latest_items[0] % db_title:
+                await db_new.publication_update(
+                    title.title_id, title.site_id,
+                    title.latest_items[0].major, title.latest_items[0].minor
+                )
 
         await asyncio.sleep(60 * 10)

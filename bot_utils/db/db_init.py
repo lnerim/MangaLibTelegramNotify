@@ -1,27 +1,7 @@
-import sqlalchemy
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, Boolean
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
-
-
-# TODO: Удалить потом
-# https://github.com/kvesteri/sqlalchemy-utils/blob/baf53c/sqlalchemy_utils/models.py#L47
-def _my_repr(self):
-    state = sqlalchemy.inspect(self)
-    field_reprs = []
-    fields = state.mapper.columns.keys()
-    for key in fields:
-        value = state.attrs[key].loaded_value
-        if key in state.unloaded:
-            value = "N/A"
-        else:
-            value = repr(value)
-        field_reprs.append('='.join((key, value)))
-
-    return '{}({})'.format(self.__class__.__name__, ', '.join(field_reprs))
-
-Base.__repr__ = _my_repr
 
 
 class DBMedia(Base):
