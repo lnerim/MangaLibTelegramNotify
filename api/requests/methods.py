@@ -41,8 +41,7 @@ async def get_latest_updates(site: Lib, last_update: datetime) -> tuple[datetime
         updates += await _get_from_api(site, site.latest_updates + f"?page={page}")
         page += 1
         logging.info(f"{datetime.fromisoformat(updates[-1]["last_item_at"])} {last_update}")
-        if page >= 5:
-            logging.error("===Превышение===")
+        if page >= 10:
             logging.error(f"{site.name} {last_update} {datetime.fromisoformat(updates[-1]['last_item_at'])}")
             break
 
