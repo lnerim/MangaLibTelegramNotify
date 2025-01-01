@@ -7,12 +7,14 @@ class TitleData(CallbackData, prefix="title"):
 
 
 class ItemData(CallbackData, prefix="item"):
-    key: int | str
+    item_id: int
+    site_id: int
     page: int
 
 
 class ItemDataDelete(CallbackData, prefix="delete"):
-    key: int | str
+    item_id: int
+    site_id: int
     page: int
     delete: bool
 

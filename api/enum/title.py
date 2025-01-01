@@ -1,35 +1,55 @@
 import logging
 from dataclasses import dataclass
-from datetime import datetime, date
+from datetime import datetime
+
+from .media_item import MediaItem
 
 
 @dataclass
 class Title:
-    title_id: int = 0
-    site: str = ""
-    name: str = ""
-    rus_name: str = ""
-    eng_name: str = ""
-    slug: str = ""
-    slug_url: str = ""
-    model: str = ""
-    picture: str = ""
-    last_item_at: date | None = None
+    title_id: int
+    site: str
+    site_id: int
+    name: str
+    rus_name: str
+    eng_name: str
+    slug: str
+    slug_url: str
+    model: str
+    picture: str
+    last_item_at: datetime
 
-    def __init__(self, data: dict):
+    latest_items: tuple[MediaItem, ...]
+
+    @staticmethod
+    def from_json(data: dict, latest_updates: datetime) -> "Title":
         logging.debug(f"TitleInfo: {data=}")
 
-        self.title_id = data["id"]
-        self.site = data["site"]
-        self.name = data["name"]
-        self.rus_name = data["rus_name"]
-        self.eng_name = data["eng_name"]
-        self.slug = data["slug"]
-        self.slug_url = data["slug_url"]
-        self.model = data["model"]
-        self.picture = data["cover"]["default"]
-        self.last_item_at = datetime.fromisoformat(data["last_item_at"]) \
-            if "last_item_at" in data else None
+        title_id = data["id"]
+        site = data["site"]
+        site_id = int(data["site"])
+        name = data["name"]
+        rus_name = data["rus_name"]
+        eng_name = data["eng_name"]
+        slug = data["slug"]
+        slug_url = data["slug_url"]
+        model = data["model"]
+        picture = data["cover"]["default"]
+
+        items = data["metadata"]["latest_items"]["items"]
+
+        latest_items: tuple[MediaItem, ...] = tuple(map(MediaItem.from_json, items))
+        last_item_at = max(latest_items, key=lambda x: x.created_at).created_at
+
+        latest_items = tuple(
+            filter(
+                lambda x: x.created_at > latest_updates,
+                latest_items
+            )
+        )
+
+        return Title(title_id, site, site_id, name, rus_name, eng_name, slug,
+                     slug_url, model, picture, last_item_at, latest_items)
 
     @property
     def url(self):

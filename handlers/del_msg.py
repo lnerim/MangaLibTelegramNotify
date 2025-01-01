@@ -4,6 +4,7 @@ import logging
 from asyncio import TaskGroup, Task
 
 from aiogram import Bot
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, User
 
@@ -22,7 +23,7 @@ def delete_messages(func: callable) -> callable:
         await func(*args, **get_new_kwargs(func, kwargs))
 
         if to_delete:
-            await state.update_data(del_msg=to_delete)
+            await state.update_data(del_msg=list(map(lambda x: x.message_id, to_delete)))
             await timer_set(state, bot, user_id)
         else:
             await state.clear()
@@ -60,21 +61,26 @@ async def get_user_data(**kwargs) -> tuple[FSMContext, dict, int | str, Bot]:
 
 async def timer_del(state_data: dict) -> None:
     if "timer" in state_data:
-        old_timer: Task = state_data["timer"]
-        old_timer.cancel()
+        all_tasks_: set[Task] = asyncio.all_tasks()
+        old_timer: str = state_data["timer"]
+        for task in all_tasks_:
+            if task.get_name() == old_timer:
+                task.cancel()
 
 
 async def timer_set(state: FSMContext, bot: Bot, user_id: int | str) -> None:
     async with TaskGroup() as tg:
         new_timer: Task = tg.create_task(delete_messages_after_long_time(state, bot, user_id))
-        await state.update_data(timer=new_timer)
+        await state.update_data(timer=new_timer.get_name())
 
 
 async def messages_del(state_data: dict, user_id: int | str, bot: Bot) -> None:
-    if "del_msg" in state_data:
-        # state_data["del_msg"]: list[Message]
-        messages_ids: list[int] = list(map(lambda x: x.message_id, state_data["del_msg"]))
-        await bot.delete_messages(user_id, messages_ids)
+    try:
+        if "del_msg" in state_data:
+            # state_data["del_msg"]: list[int]
+            await bot.delete_messages(user_id, state_data["del_msg"])
+    except TelegramBadRequest:
+        ...
 
 
 def get_new_kwargs(func: callable, kwargs: dict) -> dict:

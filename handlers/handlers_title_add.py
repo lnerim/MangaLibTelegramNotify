@@ -4,13 +4,13 @@ from aiogram import Router, Bot
 from aiogram.enums import ParseMode
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, URLInputFile
 from aiogram.utils.media_group import MediaGroupBuilder
 
 from api.enum import SITES, TitleInfo
 from api.enum.callback import SearchTitle, TitleData
 from api.requests import search, more_info
-from bot_utils import db
+from bot_utils import db_new
 from bot_utils.states import Search
 from handlers import delete_messages
 
@@ -76,7 +76,7 @@ async def search_input(message: Message, state: FSMContext, to_delete: list):
     for num, title in enumerate(search_data[:10]):
         slugs[title.title_id] = title.slug
         names[title.title_id] = title.rus_name or title.name
-        album.add_photo(media=title.picture)
+        album.add_photo(media=URLInputFile(title.picture))
         keyboard_input.append([
             InlineKeyboardButton(
                 text=title.rus_name or title.name,
@@ -101,7 +101,7 @@ async def search_input(message: Message, state: FSMContext, to_delete: list):
 async def choose_title(callback: CallbackQuery, state: FSMContext, bot: Bot, to_delete: list):
     title_data: TitleData = TitleData.unpack(callback.data)
     state_data = await state.get_data()
-    slug = state_data["slugs"][int(title_data.title_id)]
+    slug = state_data["slugs"][title_data.title_id]
 
     info_msg = await bot.send_message(callback.from_user.id, "Загрузка информации...")
     try:
@@ -129,7 +129,7 @@ async def choose_title(callback: CallbackQuery, state: FSMContext, bot: Bot, to_
 
     d_msg = await bot.send_photo(
         chat_id=callback.from_user.id,
-        photo=t.picture,
+        photo=URLInputFile(t.picture),
         caption=caption + summary + f"\n\nОтменить: /cancel",  # cancel len = 19
         parse_mode=ParseMode.HTML,
         reply_markup=InlineKeyboardMarkup(
@@ -154,8 +154,8 @@ async def add_title_handler(callback: CallbackQuery, state: FSMContext, bot: Bot
 async def add_title(callback: CallbackQuery, state: FSMContext, bot: Bot):
     title_data: TitleData = TitleData.unpack(callback.data)
     name_data = await state.get_data()
-    name = name_data["names"][int(title_data.title_id)]
+    name = name_data["names"][title_data.title_id]
 
-    db.publication_add(title_data.title_id, callback.from_user.id, title_data.site_id, name)
+    await db_new.publication_add(callback.from_user.id, int(title_data.title_id), title_data.site_id, name)
 
     await bot.send_message(callback.from_user.id, "✅ Успешно добавлено!\nСписок подписок /list")

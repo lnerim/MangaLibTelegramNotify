@@ -4,12 +4,13 @@ from logging.handlers import TimedRotatingFileHandler
 from os import getenv
 
 from aiogram import Bot, Dispatcher
+from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.types import BotCommand, ErrorEvent, User
+from redis.asyncio import Redis
 
 from api.enum import SITES
 from bot_utils.updater import check_update
 from handlers import *
-
 
 DEBUG_MODE = False
 
@@ -31,9 +32,10 @@ if DEBUG_MODE:
     handler_console.setFormatter(formatter)
     logger.addHandler(handler_console)
 
-
 bot = Bot(token=getenv("TOKEN"))
-dp = Dispatcher()
+redis = Redis.from_url(getenv("REDIS"))
+storage = RedisStorage(redis)
+dp = Dispatcher(storage=storage)
 
 
 async def set_commands():

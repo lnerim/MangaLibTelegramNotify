@@ -1,6 +1,5 @@
-from .database import db
-
+from .db.db_interface import db_new
 
 __all__ = (
-    "db"
+    "db_new"
 )

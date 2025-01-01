@@ -1,22 +1,41 @@
+import logging
 from dataclasses import dataclass
-
-from api.enum import Title
 
 
 @dataclass
-class TitleInfo(Title):
-    ageRestriction: str = ""
-    authors: tuple[str, ...] = tuple()
-    genres: tuple[str, ...] = tuple()
-    rating: str = ""
-    releaseDateString: str = ""
-    status: str = ""
-    summary: str = ""
-    tags: tuple[str, ...] = tuple()
-    type: str = ""
+class TitleInfo:
+    title_id: int
+    site: str
+    name: str
+    rus_name: str
+    eng_name: str
+    slug: str
+    slug_url: str
+    model: str
+    picture: str
+
+    ageRestriction: str
+    authors: tuple[str, ...]
+    genres: tuple[str, ...]
+    rating: str
+    releaseDateString: str
+    status: str
+    summary: str
+    tags: tuple[str, ...]
+    type: str
 
     def __init__(self, data: dict):
-        super().__init__(data)
+        logging.debug(f"TitleInfo: {data=}")
+
+        self.title_id = data["id"]
+        self.site = data["site"]
+        self.name = data["name"]
+        self.rus_name = data["rus_name"]
+        self.eng_name = data["eng_name"]
+        self.slug = data["slug"]
+        self.slug_url = data["slug_url"]
+        self.model = data["model"]
+        self.picture = data["cover"]["default"]
 
         self.ageRestriction = data["ageRestriction"]["label"]
         self.authors = tuple(map(lambda x: x["name"], data["authors"]))
