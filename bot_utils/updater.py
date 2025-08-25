@@ -12,7 +12,7 @@ from bot_utils.db import DBUpdates, DBMedia
 
 
 async def check_update(site: Lib, bot: Bot):
-    await asyncio.sleep(int(site.site_id) * 10)
+    await asyncio.sleep(int(site.site_id) * 10 + 30)
 
     latest_updates: datetime = datetime.now(UTC)
     logging.info(f"Начало обновления {site.name} {latest_updates=!s}")

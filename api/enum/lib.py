@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+LIB_API = "https://api.cdnlibs.org/api/"
+
 
 @dataclass
 class Lib:
@@ -17,7 +19,7 @@ MangaLib = Lib(
     site_id="1",
     url="https://mangalib.me/",
     name="MangaLib",
-    api="https://api.cdnlibs.org/api/",
+    api=LIB_API,
     model="manga",
     latest_updates="https://api.cdnlibs.org/api/latest-updates",
     search="https://api.cdnlibs.org/api/manga?&site_id[]=1&q=",
@@ -29,7 +31,7 @@ RanobeLib = Lib(
     site_id="3",
     url="https://ranobelib.me/",
     name="RanobeLib",
-    api="https://api.cdnlibs.org/api/",
+    api=LIB_API,
     model="manga",
     latest_updates="https://api.cdnlibs.org/api/latest-updates",
     search="https://api.cdnlibs.org/api/manga?&site_id[]=3&q=",
@@ -41,7 +43,7 @@ AnimeLib = Lib(
     site_id="5",
     url="https://anilib.me/",
     name="AnimeLib",
-    api="https://api.cdnlibs.org/api/",
+    api=LIB_API,
     model="anime",
     latest_updates="https://api.cdnlibs.org/api/latest-updates",
     search="https://api.cdnlibs.org/api/anime?&site_id[]=5&q=",

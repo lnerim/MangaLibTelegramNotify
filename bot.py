@@ -1,18 +1,16 @@
 import asyncio
+import os
 from logging import Formatter, getLogger, INFO, StreamHandler
 from logging.handlers import TimedRotatingFileHandler
-from os import getenv
 
-from aiogram import Bot, Dispatcher
-from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.types import BotCommand, ErrorEvent, User
-from redis.asyncio import Redis
 
-from api.enum import SITES
+from api.enum import SITES, LIB_API
+from api.requests import update_proxy_task
 from bot_utils.updater import check_update
+from config import DEBUG_MODE, bot, dp
 from handlers import *
 
-DEBUG_MODE = False
 
 logger = getLogger()
 formatter = Formatter("%(asctime)s %(levelname)s %(name)s [%(filename)s: %(lineno)d] %(message)s")
@@ -20,7 +18,7 @@ handler_file = TimedRotatingFileHandler(
     filename="bot.log",
     when="midnight",
     interval=1,
-    backupCount=3,
+    backupCount=30,
     encoding="utf-8"
 )
 handler_file.setFormatter(formatter)
@@ -31,11 +29,6 @@ if DEBUG_MODE:
     handler_console = StreamHandler()
     handler_console.setFormatter(formatter)
     logger.addHandler(handler_console)
-
-bot = Bot(token=getenv("TOKEN"))
-redis = Redis.from_url(getenv("REDIS"))
-storage = RedisStorage(redis)
-dp = Dispatcher(storage=storage)
 
 
 async def set_commands():
@@ -68,8 +61,16 @@ async def main():
     dp.include_router(default)
 
     await set_commands()
+
     async with asyncio.TaskGroup() as tg:
         tg.create_task(dp.start_polling(bot))
+
+        tg.create_task(
+            update_proxy_task(
+                url_proxy=os.getenv("PROXY_LIST"),
+                url_check=LIB_API
+            )
+        )
 
         for upd_site in SITES.values():
             tg.create_task(check_update(upd_site, bot))

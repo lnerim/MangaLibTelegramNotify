@@ -2,6 +2,7 @@ import asyncio
 import inspect
 import logging
 from asyncio import TaskGroup, Task
+from typing import Callable
 
 from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest
@@ -9,7 +10,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, User
 
 
-def delete_messages(func: callable) -> callable:
+def delete_messages(func: Callable) -> Callable:
     async def wrapper(*args, **kwargs) -> None:
         state, state_data, user_id, bot = await get_user_data(**kwargs)
 
@@ -83,7 +84,7 @@ async def messages_del(state_data: dict, user_id: int | str, bot: Bot) -> None:
         ...
 
 
-def get_new_kwargs(func: callable, kwargs: dict) -> dict:
+def get_new_kwargs(func: Callable, kwargs: dict) -> dict:
     func_args = inspect.getfullargspec(func).args
     new_kwargs = {key: value for (key, value) in kwargs.items() if key in func_args}
     return new_kwargs

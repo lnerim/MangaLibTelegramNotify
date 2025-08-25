@@ -1,4 +1,5 @@
 import logging
+import traceback
 from asyncio import sleep
 from datetime import datetime
 
@@ -8,32 +9,45 @@ from api.enum import Title, TitleInfo
 from api.enum.lib import Lib, SITES
 from api.enum.title_search import TitleSearch
 from bot_utils import db_new
+from config import redis
 
 
 async def _get_from_api(site: Lib, url: str):
-    async with AsyncClient(http2=True) as client:
-        data: Response = await client.get(
-            url=url,
-            headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                              "AppleWebKit/537.36 (KHTML, like Gecko) "
-                              "Chrome/137.0.0.0 Safari/537.36",
-                "Accept": "*/*",
-                "Accept-Encoding": "utf-8",
-                "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-                "Content-Type": "application/json",
-                "Origin": site.url,
-                "Referer": site.url,
-                "Site-Id": site.site_id
-            }
-        )
-        data.raise_for_status()
+    async def request(p):
+        async with AsyncClient(http2=True, proxy=p, timeout=20.0) as client:
+            data: Response = await client.get(
+                url=url,
+                headers={
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                                  "AppleWebKit/537.36 (KHTML, like Gecko) "
+                                  "Chrome/139.0.0.0 Safari/537.36",
+                    "Accept": "*/*",
+                    "Accept-Encoding": "utf-8",
+                    "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+                    "Content-Type": "application/json",
+                    "Origin": site.url,
+                    "Referer": site.url,
+                    "Site-Id": site.site_id
+                }
+            )
+            data.raise_for_status()
 
-    return data.json()["data"]
+        return data.json()["data"]
+
+    proxies = await redis.zrange('proxies', 0, -1, withscores=True)
+    for proxy, _ in proxies:
+        try:
+            return await request(proxy.decode("utf-8"))
+        except Exception as e:
+            logging.error(f"_get_from_api error: {e}\n{traceback.format_exc()}")
+            continue
+
+    # TODO error
+    raise Exception("Прокси закончились, а ответа нет")
 
 
 async def get_latest_updates(site: Lib, last_update: datetime) -> tuple[datetime, tuple[Title, ...]]:
-    updates: list[dict, ...] = await _get_from_api(site, site.latest_updates)
+    updates: list[dict] = await _get_from_api(site, site.latest_updates)
 
     page = 2
     while datetime.fromisoformat(updates[-1]["last_item_at"]) > last_update:

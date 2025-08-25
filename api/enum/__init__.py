@@ -1,4 +1,4 @@
-from .lib import Lib, MangaLib, RanobeLib, AnimeLib, SITES
+from .lib import Lib, MangaLib, RanobeLib, AnimeLib, SITES, LIB_API
 from .media_item import MediaItem
 from .title import Title
 from .title_info import TitleInfo
@@ -13,5 +13,6 @@ __all__ = (
     "MediaItem",
     "TitleInfo",
     "TitleSearch",
-    "SITES"
+    "SITES",
+    "LIB_API"
 )

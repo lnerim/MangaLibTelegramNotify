@@ -95,9 +95,6 @@ class MediaItem:
                 return super().__format__(format_spec)
 
     def __mod__(self, other: DBMedia) -> bool:
-        if not isinstance(other, DBMedia):
-            raise TypeError(f"DBMedia expected, got {type(other)} instead")
-
         # True - без звука
         # False - со звуком
         # other - значение из БД
