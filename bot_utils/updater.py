@@ -36,10 +36,20 @@ async def check_update(site: Lib, bot: Bot):
 
                 for item in title.latest_items:
                     try:
-                        await bot.send_photo(
+                        # TODO Починить фотки нормально
+                        # await bot.send_photo(
+                        #     chat_id=user.user_id,
+                        #     photo=URLInputFile(title.picture),
+                        #     caption=f"{"⭐️" if disable_notification else "🌟"} "
+                        #             f"Вышло обновление в произведении: "
+                        #             f"<a href='{site.url}{title.url}'>{title.rus_name or title.name}</a>\n\n"
+                        #             f"{item:info}",
+                        #     parse_mode="HTML",
+                        #     disable_notification=disable_notification
+                        # )
+                        await bot.send_message(
                             chat_id=user.user_id,
-                            photo=URLInputFile(title.picture),
-                            caption=f"{"⭐️" if disable_notification else "🌟"} "
+                            text=f"{"⭐️" if disable_notification else "🌟"} "
                                     f"Вышло обновление в произведении: "
                                     f"<a href='{site.url}{title.url}'>{title.rus_name or title.name}</a>\n\n"
                                     f"{item:info}",

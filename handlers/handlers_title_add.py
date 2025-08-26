@@ -68,7 +68,8 @@ async def search_input(message: Message, state: FSMContext, to_delete: list):
         await state.set_state(Search.wait_input)
         return
 
-    album = MediaGroupBuilder()
+    # TODO Починить картинки
+    # album = MediaGroupBuilder()
     keyboard_input: list[list[InlineKeyboardButton]] = []
 
     slugs: dict[int, str] = dict()
@@ -76,7 +77,7 @@ async def search_input(message: Message, state: FSMContext, to_delete: list):
     for num, title in enumerate(search_data[:10]):
         slugs[title.title_id] = title.slug
         names[title.title_id] = title.rus_name or title.name
-        album.add_photo(media=URLInputFile(title.picture))
+        # album.add_photo(media=URLInputFile(title.picture))
         keyboard_input.append([
             InlineKeyboardButton(
                 text=title.rus_name or title.name,
@@ -86,14 +87,14 @@ async def search_input(message: Message, state: FSMContext, to_delete: list):
     await state.update_data(slugs=slugs)
     await state.update_data(names=names)
 
-    album_messages: list[Message] = await message.answer_media_group(media=album.build())
+    # album_messages: list[Message] = await message.answer_media_group(media=album.build())
     d_msg = await message.answer("📌 Выберите одно из найденных произведений\nОтмена - /cancel",
                                  reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard_input))
 
     await state.set_state(Search.choose_title)
 
     to_delete.append(d_msg)
-    to_delete += album_messages
+    # to_delete += album_messages
 
 
 @router.callback_query(Search.choose_title)
@@ -127,10 +128,23 @@ async def choose_title(callback: CallbackQuery, state: FSMContext, bot: Bot, to_
     len_to_summary = 1024 - len(caption) - 19
     summary = t.summary[:len_to_summary - 3] + "..." if len(t.summary) > len_to_summary else t.summary
 
-    d_msg = await bot.send_photo(
+    # TODO Исправить картинку
+    # d_msg = await bot.send_photo(
+    #     chat_id=callback.from_user.id,
+    #     photo=URLInputFile(t.picture),
+    #     caption=caption + summary + f"\n\nОтменить: /cancel",  # cancel len = 19
+    #     parse_mode=ParseMode.HTML,
+    #     reply_markup=InlineKeyboardMarkup(
+    #         inline_keyboard=[[
+    #             InlineKeyboardButton(
+    #                 text="✏️ Добавить",
+    #                 callback_data=TitleData(title_id=t.title_id, site_id=title_data.site_id).pack())
+    #         ]]
+    #     )
+    # )
+    d_msg = await bot.send_message(
         chat_id=callback.from_user.id,
-        photo=URLInputFile(t.picture),
-        caption=caption + summary + f"\n\nОтменить: /cancel",  # cancel len = 19
+        text=caption + summary + f"\n\nОтменить: /cancel",  # cancel len = 19
         parse_mode=ParseMode.HTML,
         reply_markup=InlineKeyboardMarkup(
             inline_keyboard=[[
